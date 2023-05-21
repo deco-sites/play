@@ -1,5 +1,7 @@
 {
   "imports": {
+    "deco-sites/play/": "./",
+
     "deco-sites/links/": "./",
     "$store/": "./",
     "$live/": "https://denopkg.com/deco-cx/live@1.3.0/",

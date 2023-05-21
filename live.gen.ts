@@ -129,7 +129,7 @@ const manifest = {
     "$live/sections/PageInclude.tsx": i2$$$$0,
     "$live/sections/Slot.tsx": i2$$$$1,
     "$live/sections/UseSlot.tsx": i2$$$$2,
-    "deco-sites/links/sections/Links.tsx": $$$$$$$$0,
+    "deco-sites/play/sections/Links.tsx": $$$$$$$$0,
     "deco-sites/std/sections/Analytics.tsx": i2$$$$3,
     "deco-sites/std/sections/configButterCMS.global.tsx": i2$$$$4,
     "deco-sites/std/sections/configOCC.global.tsx": i2$$$$5,
