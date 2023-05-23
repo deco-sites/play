@@ -1,6 +1,6 @@
 import { Image as LiveImage } from "deco-sites/std/components/types.ts";
-import Icon, { AvailableIcons } from "$store/components/ui/Icon.tsx";
-import Text from "$store/components/ui/Text.tsx";
+import Icon, { AvailableIcons } from "./Icon.tsx";
+import Text from "./Text.tsx";
 import type { ComponentChildren } from "preact";
 
 export interface Link {
