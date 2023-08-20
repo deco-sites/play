@@ -3,8 +3,8 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="esnext" />
 
-import manifest from "./live.gen.ts";
 import { $live } from "$live/mod.ts";
+import manifest from "./live.gen.ts";
 import site from "./site.json" assert { type: "json" };
 import { start } from "$fresh/server.ts";
 import twindPlugin from "$fresh/plugins/twind.ts";
