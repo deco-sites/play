@@ -1,26 +1,23 @@
 {
   "tasks": {
-    "start": "deno run -A --watch=static/,sections/,functions/ dev.ts",
+    "start": "deno task bundle && deno run -A --unstable --watch=tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
     "component": "deno eval 'import \"$live/scripts/component.ts\"'",
-    "check": "deno fmt && deno lint && deno check dev.ts main.ts"
+    "check": "deno fmt && deno lint && deno check dev.ts main.ts",
+    "install": "deno eval 'import \"$live/scripts/apps/install.ts\"'",
+    "uninstall": "deno eval 'import \"$live/scripts/apps/uninstall.ts\"'",
+    "bundle": "deno eval 'import \"$live/scripts/apps/bundle.ts\"' deco-sites/fashion"
   },
   "githooks": {
     "pre-commit": "check"
   },
   "lint": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     }
   },
   "fmt": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     }
   },
   "importMap": "./import_map.json",

@@ -1,6 +1,3 @@
-import { Image as LiveImage } from "deco-sites/std/components/types.ts";
-import Icon, { AvailableIcons } from "../components/ui/Icon.tsx";
-import Text from "../components/ui/Text.tsx";
 import type { ComponentChildren } from "preact";
 
 export interface Props {

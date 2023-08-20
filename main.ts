@@ -3,22 +3,18 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="esnext" />
 
-import { $live } from "$live/mod.ts";
 import manifest from "./live.gen.ts";
-import site from "./site.json" assert { type: "json" };
 import { start } from "$fresh/server.ts";
-import twindPlugin from "$fresh/plugins/twind.ts";
-import twindConfig from "./twind.config.ts";
-import prefetchPlugin from "prefetch";
+import plugins from "https://denopkg.com/deco-sites/std@1.20.5/plugins/mod.ts";
 import partytownPlugin from "partytown/mod.ts";
-
-await start($live(manifest, site), {
+import manifest from "./fresh.gen.ts";
+import decoManifest from "./manifest.gen.ts";
+await start(manifest, {
   plugins: [
-    partytownPlugin(),
-    prefetchPlugin(),
-    twindPlugin({
-      ...twindConfig,
-      selfURL: new URL("./twind.config.ts", import.meta.url).href,
+    ...plugins({
+      manifest: decoManifest,
+      site: { namespace: "deco-sites/play" },
     }),
+    partytownPlugin(),
   ],
 });

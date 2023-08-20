@@ -192,6 +192,7 @@ const manifest = {
     "deco-sites/std/sections/SEOPLP.tsx": i2$$$$$15,
     "deco-sites/std/sections/VTEXPortalDataLayerCompatibility.tsx": i2$$$$$16,
   },
+  "name": "deco-sites/play",
   "loaders": {
     "$live/loaders/secret.ts": i2$$$0,
     "$live/loaders/state.ts": i2$$$1,
