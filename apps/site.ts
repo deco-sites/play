@@ -1,5 +1,8 @@
 import type { App, AppContext as AC } from "$live/types.ts";
-import { default as play, State } from "../../deco-play/app/mod.ts";
+import {
+  default as play,
+  State,
+} from "https://denopkg.com/mcandeia/play@0.1.2/app/mod.ts";
 import type { Manifest } from "../manifest.gen.ts";
 import manifest from "../manifest.gen.ts";
 
