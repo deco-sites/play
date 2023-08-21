@@ -1,5 +1,4 @@
+import { forApp } from "deco/clients/withManifest.ts";
+import { default as app } from "./apps/site.ts";
 
-import { withManifest } from "$live/clients/withManifest.ts";
-import type { Manifest } from "./live.gen.ts";
-
-export const Runtime = withManifest<Manifest>();
+export const Runtime = forApp<ReturnType<typeof app>>();

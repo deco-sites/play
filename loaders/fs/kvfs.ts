@@ -1,9 +1,9 @@
 /// <reference lib="deno.unstable" />
 
 import {
-  File,
-  PlayFS,
-} from "https://denopkg.com/mcandeia/play@0.1.9/app/mod.ts";
+    File,
+    PlayFS,
+} from "../../apps/site.ts";
 
 let kv: Deno.Kv | null = null;
 try {

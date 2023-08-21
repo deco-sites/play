@@ -3,7 +3,6 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="esnext" />
 
-import manifest from "./live.gen.ts";
 import { start } from "$fresh/server.ts";
 import plugins from "https://denopkg.com/deco-sites/std@1.20.5/plugins/mod.ts";
 import partytownPlugin from "partytown/mod.ts";

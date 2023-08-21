@@ -2,18 +2,44 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import * as $$$0 from "./loaders/fs/kvfs.ts";
+import * as $0 from "./functions/context.ts";
+import * as $$$0 from "./loaders/fresh.gen.ts";
+import * as $$$1 from "./loaders/main.ts";
+import * as $$$2 from "./loaders/manifest.gen.ts";
+import * as $$$3 from "./loaders/import_map.ts";
+import * as $$$4 from "./loaders/files/serve.ts";
+import * as $$$5 from "./loaders/fs/kvfs.ts";
 import * as $$$$$$0 from "./sections/Topbar.tsx";
-import * as $$$$$$1 from "./sections/Links.tsx";
+import * as $$$$$$1 from "./sections/FileTree.tsx";
+import * as $$$$$$2 from "./sections/Links.tsx";
+import * as $$$$$$$$$0 from "./actions/new.ts";
+import * as $$$$$$$$$1 from "./actions/files/remove.ts";
+import * as $$$$$$$$$2 from "./actions/files/createOrEdit.ts";
+import * as $$$$$$$$$3 from "./actions/deploy.ts";
 import * as $$$$$$$$$$$0 from "./apps/site.ts";
 
 const manifest = {
+  "functions": {
+    "deco-sites/play/functions/context.ts": $0,
+  },
   "loaders": {
-    "deco-sites/play/loaders/fs/kvfs.ts": $$$0,
+    "deco-sites/play/loaders/files/serve.ts": $$$4,
+    "deco-sites/play/loaders/fresh.gen.ts": $$$0,
+    "deco-sites/play/loaders/fs/kvfs.ts": $$$5,
+    "deco-sites/play/loaders/import_map.ts": $$$3,
+    "deco-sites/play/loaders/main.ts": $$$1,
+    "deco-sites/play/loaders/manifest.gen.ts": $$$2,
   },
   "sections": {
-    "deco-sites/play/sections/Links.tsx": $$$$$$1,
+    "deco-sites/play/sections/FileTree.tsx": $$$$$$1,
+    "deco-sites/play/sections/Links.tsx": $$$$$$2,
     "deco-sites/play/sections/Topbar.tsx": $$$$$$0,
+  },
+  "actions": {
+    "deco-sites/play/actions/deploy.ts": $$$$$$$$$3,
+    "deco-sites/play/actions/files/createOrEdit.ts": $$$$$$$$$2,
+    "deco-sites/play/actions/files/remove.ts": $$$$$$$$$1,
+    "deco-sites/play/actions/new.ts": $$$$$$$$$0,
   },
   "apps": {
     "deco-sites/play/apps/site.ts": $$$$$$$$$$$0,
