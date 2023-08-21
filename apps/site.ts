@@ -1,14 +1,14 @@
-import type { App, AppContext as AC } from "$live/types.ts";
+import type { AppContext as AC, App } from "$live/types.ts";
 import {
-  default as website,
-  onBeforeResolveProps,
   Props as WebSiteProps,
+  onBeforeResolveProps,
+  default as website,
 } from "https://denopkg.com/deco-cx/apps@2ec513dbcc1b29edeec411ce99f184481e8e1a86/website/mod.ts";
 import {
-  default as play,
   Props as PlayProps,
   State,
-} from "https://denopkg.com/mcandeia/play@0.1.8/app/mod.ts";
+  default as play,
+} from "https://denopkg.com/mcandeia/play@0.1.9/app/mod.ts";
 import type { Manifest } from "../manifest.gen.ts";
 import manifest from "../manifest.gen.ts";
 

@@ -3,7 +3,7 @@
 import {
   File,
   PlayFS,
-} from "https://denopkg.com/mcandeia/play@0.1.8/app/mod.ts";
+} from "https://denopkg.com/mcandeia/play@0.1.9/app/mod.ts";
 
 let kv: Deno.Kv | null = null;
 try {
