@@ -16,33 +16,12 @@ export default async function newPlayground(
   _req: Request,
   ctx: AppContext,
 ) {
-  const id: string = uniqueNamesGenerator({
+  const id = uniqueNamesGenerator({
     dictionaries: [animals, adjectives, numberDictionary],
     length: 3,
   });
 
-  await ctx.invoke("deco-sites/play/actions/files/createOrEdit.ts", {
-    file: {
-      location: ["sections", "MySection.tsx"],
-      content: `
-  /**
-   * @title {{{myProp}}}
-   * /
-  export interface Props {
-      /**
-       * @title The property
-       * @description This is a property
-       * /
-      myProp: string;
-  }
-  
-  export default function MySection({ myProp }: Props) {
-      return <div>{myProp}</div>;
-  }
-  `,
-    },
-    playId: id,
-  });
+  await ctx.invoke("deco-sites/play/actions/useTemplate.ts", { playId: id });
 
   await ctx.invoke("deco-sites/play/actions/deploy.ts", {
     playId: id,

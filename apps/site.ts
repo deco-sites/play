@@ -67,7 +67,7 @@ export default function App(
         return API.fromToken(token!);
       },
       serveFileUrl: (playId: string, location: string[]) =>
-        `/live/invoke/deco-sites/play/loaders/files/serve.ts?props=${
+        `/live/invoke/deco-sites/play/loaders/files/serve.tsx?props=${
           btoa(JSON.stringify({ location, playId }))
         }`,
       ...state,

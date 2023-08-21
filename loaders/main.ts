@@ -18,7 +18,6 @@ import { start } from "$fresh/server.ts";
 import manifest from "./fresh.gen.ts?playId=${playId}";
 import decoManifest from "./manifest.gen.ts?playId=${playId}";
 import plugins from "${std}/plugins/mod.ts";
-import partytownPlugin from "partytown/mod.ts";
 import { context } from "deco/live.ts";
 import "${std}/plugins/tailwind/bundler.ts";
 
@@ -41,7 +40,7 @@ Deno.readTextFile = (
   if (urlString.startsWith("http")) {
     return fetch(urlString).then(response => response.text());
   }
-  const serveFileUrl = new URL(import.meta.url).origin + "/live/invoke/deco-sites/play/loaders/files/serve.ts?props=";
+  const serveFileUrl = new URL(import.meta.url).origin + "/live/invoke/deco-sites/play/loaders/files/serve.tsx?props=";
   return fetch(serveFileUrl + (btoa(JSON.stringify({ location: urlString.split("/"), playId: "${playId}" })))).then(response => response.text());
 };
 
@@ -51,7 +50,6 @@ await start(manifest, {
       manifest: decoManifest,
       site: { namespace: "${playId}" },
     }),
-    partytownPlugin(),
   ],
 });
     

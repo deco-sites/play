@@ -8,6 +8,7 @@ export default function importMap(
 ) {
   return Response.json({
     "imports": {
+      "$live/": `https://denopkg.com/deco-cx/deco@${decoVersion ?? "1.29.1"}/`,
       "deco/": `https://denopkg.com/deco-cx/deco@${decoVersion ?? "1.29.1"}/`,
       "$fresh/": `https://denopkg.com/deco-cx/fresh@${
         freshVersion ?? "5d7384631e8b8366c0d6cb15e158f43e0d01a218"
