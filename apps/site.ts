@@ -1,18 +1,27 @@
 import type { App, AppContext as AC } from "$live/types.ts";
 import {
+  default as website,
+  onBeforeResolveProps,
+  Props as WebSiteProps,
+} from "https://denopkg.com/deco-cx/apps@2ec513dbcc1b29edeec411ce99f184481e8e1a86/website/mod.ts";
+import {
   default as play,
+  Props as PlayProps,
   State,
-} from "https://denopkg.com/mcandeia/play@0.1.2/app/mod.ts";
+} from "https://denopkg.com/mcandeia/play@0.1.8/app/mod.ts";
 import type { Manifest } from "../manifest.gen.ts";
 import manifest from "../manifest.gen.ts";
 
+export { onBeforeResolveProps };
+export type Props = WebSiteProps & PlayProps;
 export default function Site(
-  state: State,
-): App<Manifest, State, [ReturnType<typeof play>]> {
+  state: Props,
+): App<Manifest, State, [ReturnType<typeof play>, ReturnType<typeof website>]> {
+  const playApp = play(state);
   return {
     manifest,
-    state,
-    dependencies: [play(state)],
+    state: playApp.state,
+    dependencies: [playApp, website(state)],
   };
 }
 

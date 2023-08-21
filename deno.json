@@ -1,11 +1,12 @@
 {
   "tasks": {
     "start": "deno task bundle && deno run -A --unstable --watch=tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
+    "play": "deno run -r -A --import-map=http://localhost:8000/live/invoke/play/loaders/import_map.ts http://localhost:8000/live/invoke/play/loaders/main.ts?playId=1",
     "component": "deno eval 'import \"$live/scripts/component.ts\"'",
     "check": "deno fmt && deno lint && deno check dev.ts main.ts",
     "install": "deno eval 'import \"$live/scripts/apps/install.ts\"'",
     "uninstall": "deno eval 'import \"$live/scripts/apps/uninstall.ts\"'",
-    "bundle": "deno eval 'import \"$live/scripts/apps/bundle.ts\"' deco-sites/fashion"
+    "bundle": "deno eval 'import \"$live/scripts/apps/bundle.ts\"' deco-sites/play"
   },
   "githooks": {
     "pre-commit": "check"

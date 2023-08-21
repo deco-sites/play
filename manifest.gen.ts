@@ -9,16 +9,16 @@ import * as $$$$$$$$$$$0 from "./apps/site.ts";
 
 const manifest = {
   "loaders": {
-    "deco-sites/fashion/loaders/fs/kvfs.ts": $$$0,
+    "deco-sites/play/loaders/fs/kvfs.ts": $$$0,
   },
   "sections": {
-    "deco-sites/fashion/sections/Links.tsx": $$$$$$1,
-    "deco-sites/fashion/sections/Topbar.tsx": $$$$$$0,
+    "deco-sites/play/sections/Links.tsx": $$$$$$1,
+    "deco-sites/play/sections/Topbar.tsx": $$$$$$0,
   },
   "apps": {
-    "deco-sites/fashion/apps/site.ts": $$$$$$$$$$$0,
+    "deco-sites/play/apps/site.ts": $$$$$$$$$$$0,
   },
-  "name": "deco-sites/fashion",
+  "name": "deco-sites/play",
   "baseUrl": import.meta.url,
 };
 
