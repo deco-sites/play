@@ -1,11 +1,11 @@
 import type { App, AppContext as AC } from "deco/types.ts";
 import { badRequest, context } from "deco/mod.ts";
-import { Secret } from "https://denopkg.com/deco-cx/apps@2ec513dbcc1b29edeec411ce99f184481e8e1a86/website/loaders/secret.ts";
+import { Secret } from "apps/website/loaders/secret.ts";
 import {
   default as website,
   onBeforeResolveProps,
   Props as WebSiteProps,
-} from "https://denopkg.com/deco-cx/apps@2ec513dbcc1b29edeec411ce99f184481e8e1a86/website/mod.ts";
+} from "apps/website/mod.ts";
 import { API } from "https://denopkg.com/denoland/deployctl@1.8.0/src/utils/api.ts";
 import type { Manifest } from "../manifest.gen.ts";
 import manifest from "../manifest.gen.ts";
