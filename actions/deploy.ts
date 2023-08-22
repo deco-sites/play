@@ -17,12 +17,10 @@ export default async function Deploy(
     },
   };
   const files = [];
-  const neededHashes = await client.projectNegotiateAssets(playId, {
+  await client.projectNegotiateAssets(playId, {
     entries,
   });
-  if (neededHashes.length !== 0) {
-    files.push(denoJson);
-  }
+  files.push(denoJson);
 
   const events = client.pushDeploy(playId, {
     importMapUrl: `${ctx.playDomain}/live/invoke/play/loaders/import_map.ts`,
