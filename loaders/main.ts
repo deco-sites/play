@@ -24,6 +24,8 @@ import { default as sourceMapFor } from "play/commons.tsx?playId=${playId}";
 context.isDeploy = true;
 
 const readTextFile = Deno.readTextFile;
+console.log(await readTextFile("./import_map.json"));
+console.log(await readTextFile("./deno.json"));
 Deno.readTextFile = (
   path: string | URL,
   options?: Parameters<typeof Deno.readTextFile>[1],
