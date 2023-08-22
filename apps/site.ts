@@ -1,11 +1,11 @@
-import type { App, AppContext as AC } from "deco/types.ts";
-import { badRequest, context } from "deco/mod.ts";
 import { Secret } from "apps/website/loaders/secret.ts";
 import {
   default as website,
   onBeforeResolveProps,
   Props as WebSiteProps,
 } from "apps/website/mod.ts";
+import { badRequest, context } from "deco/mod.ts";
+import type { App, AppContext as AC } from "deco/types.ts";
 import { API } from "https://denopkg.com/denoland/deployctl@1.8.0/src/utils/api.ts";
 import type { Manifest } from "../manifest.gen.ts";
 import manifest from "../manifest.gen.ts";
@@ -49,12 +49,11 @@ export interface State extends Props {
   denoDeployClient: () => Promise<ReturnType<typeof API["fromToken"]>>;
 }
 
-const PLAY_DOMAIN = "https://play.deco.cx/";
 export default function App(
   state: Props,
 ): App<Manifest, State, [ReturnType<typeof website>]> {
   const playDomain = context.isDeploy
-    ? (state.playDomain ?? PLAY_DOMAIN)
+    ? `https://deco-sites-play-${context.deploymentId}.deno.dev`
     : "http://localhost:8000";
   return {
     manifest,
