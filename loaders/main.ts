@@ -23,13 +23,14 @@ import { default as sourceMapFor } from "play/commons.tsx?playId=${playId}";
 
 context.isDeploy = true;
 
+const readTextFile = Deno.readTextFile;
 Deno.readTextFile = (
   path: string | URL,
   options?: Parameters<typeof Deno.readTextFile>[1],
 ) => {
   const urlString = path.toString();
   if (urlString.endsWith("deno.json")) {
-    return Deno.readTextFile("./deno.json", options);
+    return readTextFile("./deno.json", options);
   }
   if (urlString.startsWith("http")) {
     return fetch(urlString).then(response => response.text());

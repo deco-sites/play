@@ -31,13 +31,13 @@ export default async function Deploy(
 
   const events = client.pushDeploy(playId, {
     importMapUrl:
-      `https://deco-sites-play-r1dk4bmykd8g.deno.dev/live/invoke/play/loaders/import_map.ts`,
+      `https://deco-sites-play-qzr90n6ttz70.deno.dev/live/invoke/play/loaders/import_map.ts`,
     production: true,
     manifest: {
       entries,
     },
     url:
-      `https://deco-sites-play-r1dk4bmykd8g.deno.dev/live/invoke/play/loaders/main.ts?playId=${playId}`,
+      `https://deco-sites-play-qzr90n6ttz70.deno.dev/live/invoke/play/loaders/main.ts?playId=${playId}`,
   }, files);
 
   for await (const event of events) {
