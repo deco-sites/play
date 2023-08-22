@@ -29,8 +29,8 @@ Deno.readTextFile = (
 ) => {
   const urlString = path.toString();
   if (urlString.endsWith("deno.json")) {
-    console.log("READING DENO JSON")
     return Promise.resolve(JSON.stringify({
+      "importMap": new URL(import.meta.url).origin + "/live/invoke/play/loaders/import_map.ts",
       "compilerOptions": {
         "jsx": "react-jsx",
         "jsxImportSource": "preact",
