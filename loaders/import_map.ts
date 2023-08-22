@@ -1,3 +1,5 @@
+import { AppContext } from "../apps/site.ts";
+
 export interface ImportMapOptions {
   freshVersion?: string;
   decoVersion?: string;
@@ -5,9 +7,11 @@ export interface ImportMapOptions {
 export default function importMap(
   { freshVersion, decoVersion }: ImportMapOptions,
   _req: Request,
+  { playDomain }: AppContext,
 ) {
   return Response.json({
     "imports": {
+      "play/": `${playDomain}/live/invoke/play/loaders/`,
       "$live/": `https://denopkg.com/deco-cx/deco@${
         decoVersion ?? "cff6db4dc84ffbd8389b5817c75a525ae8b7fe5f"
       }/`,

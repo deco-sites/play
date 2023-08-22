@@ -1,24 +1,14 @@
 import { AppContext, File, PlayOptions } from "../apps/site.ts";
 
-const baseSiteForPlayId = (playId: string): File[] => [{
+const baseSite: File[] = [{
   content: `
 import type { App, AppContext as AC } from "deco/types.ts";
-import type { Manifest } from "/live/invoke/play/loaders/manifest.gen.ts?playId=${playId}";
-import manifest from "/live/invoke/play/loaders/manifest.gen.ts?playId=${playId}";
-import { default as sourceMapFor } from "/live/invoke/play/loaders/commons.tsx?playId=${playId}";
+import type { Manifest } from "play/manifest.gen.ts";
+import manifest from "play/manifest.gen.ts";
+import { default as sourceMapFor } from "play/commons.tsx";
 
 export interface State {
     url: string;
-}
-const currentUrl = new URL(import.meta.url).origin;
-
-const urlFromBlock = (block: string) => {
-  const [playId, ...location] = block.split("/");
-  const props = encodeURIComponent(
-    btoa(JSON.stringify({ location, playId })),
-  )
-
-  return currentUrl + "/live/invoke/play/loaders/files/serve.tsx?props=" + props;
 }
 
 export default function App(
@@ -35,8 +25,26 @@ export type AppContext = AC<ReturnType<typeof App>>;
   `,
   location: ["apps", "site.ts"],
 }, {
+  location: ["loaders", "productLoader.ts"],
+  content: `
+
+export interface Product {
+  name: string;
+  price: number;
+}
+export interface Props {
+  product: Product;
+}
+
+export default function ProductLoader({product}: Props): Product {
+  return product;
+}
+`
+},{
   location: ["sections", "MySection.tsx"],
   content: `
+
+import { Product } from "./loaders/productLoader.ts";
 /**
  * @title {{{myProp}}}
  */
@@ -45,11 +53,11 @@ export interface Props {
      * @title The property
      * @description This is a property
      */
-    myProp: string;
+    product: Product;
 }
 
-export default function MySection({ myProp }: Props) {
-    return <div>{myProp}</div>;
+export default function MySection({ product }: Props) {
+    return <><span>{product.name}</span><span>{product.price}</span></>;
 }
 `,
 }];
@@ -59,9 +67,8 @@ export default async function useTemplate(
   _req: Request,
   ctx: AppContext,
 ) {
-  const files = baseSiteForPlayId(playId);
   await Promise.all(
-    files.map((file) =>
+    baseSite.map((file) =>
       ctx.invoke("play/actions/files/createOrEdit.ts", {
         file,
         playId,

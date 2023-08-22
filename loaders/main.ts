@@ -19,7 +19,7 @@ import manifest from "./fresh.gen.ts?playId=${playId}";
 import decoManifest from "./manifest.gen.ts?playId=${playId}";
 import plugins from "${std}/plugins/mod.ts";
 import { context } from "deco/live.ts";
-import { default as sourceMapFor } from "/live/invoke/play/loaders/commons.tsx?playId=${playId}";
+import { default as sourceMapFor } from "play/commons.tsx?playId=${playId}";
 
 context.isDeploy = true;
 
