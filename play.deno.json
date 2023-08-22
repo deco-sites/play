@@ -1,0 +1,7 @@
+{
+  "importMap": "https://play.deco.cx/live/invoke/play/loaders/import_map.ts",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  }
+}

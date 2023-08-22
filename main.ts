@@ -12,7 +12,7 @@ await start(manifest, {
   plugins: [
     ...plugins({
       manifest: decoManifest,
-      site: { namespace: "deco-sites/play" },
+      site: { namespace: "play" },
     }),
     partytownPlugin(),
   ],

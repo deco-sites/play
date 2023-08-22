@@ -1,12 +1,12 @@
 {
   "tasks": {
-    "start": "deno task bundle && deno run -A --unstable --watch=tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
-    "play": "deno run -r -A --import-map=http://localhost:8000/live/invoke/deco-sites/play/loaders/import_map.ts 'http://localhost:8000/live/invoke/deco-sites/play/loaders/main.ts?playId=candy-store'",
+    "start": "deno task bundle && DECO_SITE_NAME=play deno run -A --unstable --watch=tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
+    "play": "deno run -r -A --import-map=http://localhost:8000/live/invoke/play/loaders/import_map.ts --config=play.deno.json 'http://localhost:8000/live/invoke/play/loaders/main.ts?playId=candy-store'",
     "component": "deno eval 'import \"deco/scripts/component.ts\"'",
     "check": "deno fmt && deno lint && deno check dev.ts main.ts",
     "install": "deno eval 'import \"deco/scripts/apps/install.ts\"'",
     "uninstall": "deno eval 'import \"deco/scripts/apps/uninstall.ts\"'",
-    "bundle": "deno eval 'import \"deco/scripts/apps/bundle.ts\"' deco-sites/play"
+    "bundle": "deno eval 'import \"deco/scripts/apps/bundle.ts\"' play"
   },
   "githooks": {
     "pre-commit": "check"

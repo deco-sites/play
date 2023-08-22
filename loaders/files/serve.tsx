@@ -3,6 +3,7 @@ import { AppContext, PlayOptions } from "../../apps/site.ts";
 
 export interface Props extends PlayOptions {
   location: string[];
+  path?: string;
 }
 const extensionToContentType: Record<string, string> = {
   "ts": "application/typescript",
@@ -13,11 +14,11 @@ const extensionToContentType: Record<string, string> = {
   "jsonc": "application/jsonc",
 };
 export default async function serveFile(
-  { location, playId }: Props,
+  { location, playId, path }: Props,
   _req: Request,
   { fs }: AppContext,
 ): Promise<Response> {
-  const file = await fs.forPlay(playId).get(location);
+  const file = await fs.forPlay(playId).get(location ?? path?.split("/"));
   if (!file) {
     return new Response(null, { status: 404 });
   }

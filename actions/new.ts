@@ -21,9 +21,9 @@ export default async function newPlayground(
     length: 3,
   });
 
-  await ctx.invoke("deco-sites/play/actions/useTemplate.ts", { playId: id });
+  await ctx.invoke("play/actions/useTemplate.ts", { playId: id });
 
-  await ctx.invoke("deco-sites/play/actions/deploy.ts", {
+  await ctx.invoke("play/actions/deploy.ts", {
     playId: id,
   });
   return {
