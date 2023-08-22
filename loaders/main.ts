@@ -33,7 +33,7 @@ Deno.readTextFile = (
       "importMap": new URL(import.meta.url).origin + "/live/invoke/play/loaders/import_map.ts",
       "compilerOptions": {
         "jsx": "react-jsx",
-        "jsxImportSource": "preact",
+        "jsxImportSource": "https://esm.sh/preact@10.15.1",
       },
     }));
   }
