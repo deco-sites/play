@@ -8,29 +8,36 @@ export default async function Deploy(
   _req: Request,
   ctx: AppContext,
 ): Promise<void> {
+  const importMap = await ctx.invoke("play/loaders/import_map.ts");
+  const arrBuffer = await importMap.arrayBuffer();
+  const importMapData = new Uint8Array(arrBuffer);
   const client = await ctx.denoDeployClient();
+  const files = [importMapData, denoJson];
   const entries: Record<string, ManifestEntry> = {
     "deno.json": {
       kind: "file",
       gitSha1: await calculateGitSha1(denoJson),
       size: denoJson.byteLength,
     },
+    "import_map.json": {
+      kind: "file",
+      gitSha1: await calculateGitSha1(importMapData),
+      size: importMapData.byteLength,
+    },
   };
-  const files = [];
   await client.projectNegotiateAssets(playId, {
     entries,
   });
-  files.push(denoJson);
 
   const events = client.pushDeploy(playId, {
     importMapUrl:
-      `https://deco-sites-play-19xjgnj0ss9g.deno.dev/live/invoke/play/loaders/import_map.ts`,
+      `https://deco-sites-play-snc03ecjyg20.deno.dev/live/invoke/play/loaders/import_map.ts`,
     production: true,
     manifest: {
       entries,
     },
     url:
-      `https://deco-sites-play-19xjgnj0ss9g.deno.dev/live/invoke/play/loaders/main.ts?playId=${playId}`,
+      `https://deco-sites-play-snc03ecjyg20.deno.dev/live/invoke/play/loaders/main.ts?playId=${playId}`,
   }, files);
 
   for await (const event of events) {
