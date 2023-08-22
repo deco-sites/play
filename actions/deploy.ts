@@ -23,12 +23,14 @@ export default async function Deploy(
   files.push(denoJson);
 
   const events = client.pushDeploy(playId, {
-    importMapUrl: `${ctx.playDomain}/live/invoke/play/loaders/import_map.ts`,
+    importMapUrl:
+      `https://deco-sites-play-91c6777m2hag.deno.dev/live/invoke/play/loaders/import_map.ts`,
     production: true,
     manifest: {
       entries,
     },
-    url: `${ctx.playDomain}/live/invoke/play/loaders/main.ts?playId=${playId}`,
+    url:
+      `https://deco-sites-play-91c6777m2hag.deno.dev/live/invoke/play/loaders/main.ts?playId=${playId}`,
   }, files);
 
   for await (const event of events) {
