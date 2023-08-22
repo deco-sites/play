@@ -19,7 +19,6 @@ import manifest from "./fresh.gen.ts?playId=${playId}";
 import decoManifest from "./manifest.gen.ts?playId=${playId}";
 import plugins from "${std}/plugins/mod.ts";
 import { context } from "deco/live.ts";
-import "${std}/plugins/tailwind/bundler.ts";
 import { default as sourceMapFor } from "/live/invoke/play/loaders/commons.tsx?playId=${playId}";
 
 context.isDeploy = true;
