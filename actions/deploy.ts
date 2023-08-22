@@ -30,14 +30,12 @@ export default async function Deploy(
   });
 
   const events = client.pushDeploy(playId, {
-    importMapUrl:
-      `https://deco-sites-play-q2v39t90dv70.deno.dev/live/invoke/play/loaders/import_map.ts`,
+    importMapUrl: `${ctx.playDomain}/live/invoke/play/loaders/import_map.ts`,
     production: true,
     manifest: {
       entries,
     },
-    url:
-      `https://deco-sites-play-q2v39t90dv70.deno.dev/live/invoke/play/loaders/main.ts?playId=${playId}`,
+    url: `${ctx.playDomain}/live/invoke/play/loaders/main.ts?playId=${playId}`,
   }, files);
 
   for await (const event of events) {

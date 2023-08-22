@@ -24,8 +24,6 @@ import { default as sourceMapFor } from "play/commons.tsx?playId=${playId}";
 context.isDeploy = true;
 
 const readTextFile = Deno.readTextFile;
-console.log(await readTextFile("./import_map.json"));
-console.log(await readTextFile("./deno.json"));
 Deno.readTextFile = (
   path: string | URL,
   options?: Parameters<typeof Deno.readTextFile>[1],
@@ -40,10 +38,6 @@ Deno.readTextFile = (
   const serveFileUrl = new URL(import.meta.url).origin + "/live/invoke/play/loaders/files/serve.tsx?props=";
   return fetch(serveFileUrl + (btoa(JSON.stringify({ location: urlString.split("/"), playId: "${playId}" })))).then(response => response.text());
 };
-
-for await (const dirEntry of Deno.readDir('./')) {
-  console.log(dirEntry);
-}
 
 await start(manifest, {
   plugins: [
