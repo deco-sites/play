@@ -19,6 +19,7 @@ export default async function newPlayground(
   const id = uniqueNamesGenerator({
     dictionaries: [animals, adjectives, numberDictionary],
     length: 3,
+    separator: "-",
   });
 
   await ctx.invoke("play/actions/useTemplate.ts", { playId: id });
