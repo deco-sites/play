@@ -8,5 +8,11 @@ export default async function createOrEdit(
   _req: Request,
   { fs }: AppContext,
 ): Promise<File> {
-  return await fs.forPlay(playId).createOrEdit(file.location, file.content);
+  const isTsx = file.location[file.location.length - 1]?.endsWith(".tsx");
+  return await fs.forPlay(playId).createOrEdit(
+    file.location,
+    isTsx && !file.content.includes("jsxImportSource")
+      ? `/** @jsxImportSource preact */\n${file.content}`
+      : file.content,
+  );
 }
