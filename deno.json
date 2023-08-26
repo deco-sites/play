@@ -1,7 +1,7 @@
 {
   "tasks": {
     "start": "deno task bundle && DECO_SITE_NAME=play deno run -A --unstable --watch=tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
-    "play": "deno run -r -A --import-map=http://localhost:8000/live/invoke/play/loaders/import_map.ts --config=play.deno.json 'http://localhost:8000/live/invoke/play/loaders/main.ts?playId=candy-store'",
+    "play": "deno run -r -A --import-map=https://deco-sites-play-bvahgfx4vhhg.deno.dev/live/invoke/play/loaders/import_map.ts --config=play.deno.json 'https://deco-sites-play-bvahgfx4vhhg.deno.dev/live/invoke/play/loaders/main.ts?playId=candy-store'",
     "component": "deno eval 'import \"deco/scripts/component.ts\"'",
     "check": "deno fmt && deno lint && deno check dev.ts main.ts",
     "install": "deno eval 'import \"deco/scripts/apps/install.ts\"'",
