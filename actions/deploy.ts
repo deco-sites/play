@@ -30,7 +30,8 @@ export default async function Deploy(
   });
 
   const events = client.pushDeploy(playId, {
-    importMapUrl: `${ctx.playDomain}/live/invoke/play/loaders/import_map.ts`,
+    importMapUrl:
+      `${ctx.playDomain}/live/invoke/play/loaders/import_map.ts?v=${Math.random()}`,
     production: true,
     manifest: {
       entries,

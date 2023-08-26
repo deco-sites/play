@@ -12,12 +12,8 @@ export default function importMap(
   return Response.json({
     "imports": {
       "play/": `${playDomain}/live/invoke/play/loaders/`,
-      "$live/": `https://denopkg.com/deco-cx/deco@${
-        decoVersion ?? "cff6db4dc84ffbd8389b5817c75a525ae8b7fe5f"
-      }/`,
-      "deco/": `https://denopkg.com/deco-cx/deco@${
-        decoVersion ?? "cff6db4dc84ffbd8389b5817c75a525ae8b7fe5f"
-      }/`,
+      "$live/": `https://denopkg.com/deco-cx/deco@${decoVersion ?? "1.30.5"}/`,
+      "deco/": `https://denopkg.com/deco-cx/deco@${decoVersion ?? "1.30.5"}/`,
       "$fresh/": `https://denopkg.com/deco-cx/fresh@${
         freshVersion ?? "78b24bb72a837543184d3632b5d77e83db43c0c7"
       }/`,
