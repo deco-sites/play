@@ -39,10 +39,11 @@ export interface Props {
 export default function ProductLoader({product}: Props): Product {
   return product;
 }
-`
-},{
+`,
+}, {
   location: ["sections", "MySection.tsx"],
   content: `
+/** @jsxImportSource preact */
 
 import { Product } from "./loaders/productLoader.ts";
 /**
