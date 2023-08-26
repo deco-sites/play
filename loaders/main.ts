@@ -29,7 +29,6 @@ Deno.readTextFile = (
   path: string | URL,
   options?: Parameters<typeof Deno.readTextFile>[1],
 ) => {
-  console.log("READING", path);
   const urlString = path.toString();
   if (urlString.endsWith("deno.json")) {
     return Promise.resolve(JSON.stringify({
@@ -47,10 +46,6 @@ Deno.readTextFile = (
   return fetch(serveFileUrl + (btoa(JSON.stringify({ location: urlString.split("/"), playId: "${playId}" })))).then(response => response.text());
 };
 
-
-for await (const dirEntry of walk("/")) {
-  console.log(dirEntry);
-}
 
 await start(manifest, {
   plugins: [

@@ -13,10 +13,10 @@ export default function importMap(
     "imports": {
       "play/": `${playDomain}/live/invoke/play/loaders/`,
       "$live/": `https://denopkg.com/deco-cx/deco@${
-        decoVersion ?? "deb638083220fffe443df521f84c9af77bd8304f"
+        decoVersion ?? "05556fa0ae6ecf6a358cb6cee696bffd8ac3ec44"
       }/`,
       "deco/": `https://denopkg.com/deco-cx/deco@${
-        decoVersion ?? "deb638083220fffe443df521f84c9af77bd8304f"
+        decoVersion ?? "05556fa0ae6ecf6a358cb6cee696bffd8ac3ec44"
       }/`,
       "$fresh/": `https://denopkg.com/deco-cx/fresh@${
         freshVersion ?? "323c9ac5ee8df1c7decbb273ea9b6bd8f7b0ba92"
