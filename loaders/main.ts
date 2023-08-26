@@ -1,13 +1,11 @@
 export interface MainOptions {
   playId: string;
-  stdVersion?: string;
 }
 
 export default function main(
-  { playId, stdVersion }: MainOptions,
+  { playId }: MainOptions,
   _req: Request,
 ) {
-  const std = `https://denopkg.com/deco-sites/std@${stdVersion ?? "1.20.5"}`;
   const content = `
 /// <reference no-default-lib="true"/>
 /// <reference lib="dom" />
