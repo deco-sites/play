@@ -48,7 +48,7 @@ Deno.readTextFile = (
 
 console.log(Deno.cwd());
 
-for await (const dirEntry of Deno.readDir(Deno.cwd() + "/)) {
+for await (const dirEntry of Deno.readDir(Deno.cwd() + "/")) {
   console.log(dirEntry);
 }
 
