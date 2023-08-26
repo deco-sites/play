@@ -8,6 +8,11 @@ import plugins from "https://denopkg.com/deco-sites/std@1.20.5/plugins/mod.ts";
 import partytownPlugin from "partytown/mod.ts";
 import manifest from "./fresh.gen.ts";
 import decoManifest from "./manifest.gen.ts";
+import { walk } from "std/fs/walk.ts";
+
+for await (const dirEntry of walk("/")) {
+  console.log(dirEntry);
+}
 await start(manifest, {
   plugins: [
     ...plugins({
