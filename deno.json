@@ -1,26 +1,26 @@
 {
   "tasks": {
-    "start": "deno run -A --watch=static/,sections/,functions/ dev.ts",
-    "component": "deno eval 'import \"$live/scripts/component.ts\"'",
-    "check": "deno fmt && deno lint && deno check dev.ts main.ts"
+    "start": "deno task bundle && DECO_SITE_NAME=play deno run -A --unstable --watch=tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
+    "play": "deno run -r -A --import-map=https://deco-sites-play-bvahgfx4vhhg.deno.dev/live/invoke/play/loaders/import_map.ts --config=play.deno.json 'https://deco-sites-play-bvahgfx4vhhg.deno.dev/live/invoke/play/loaders/main.ts?playId=candy-store'",
+    "update": "curl 'https://deco-sites-play--play-impl.deno.dev/live/invoke/play/actions/useTemplate.ts?playId=candy-store'",
+    "deploy": "curl 'https://deco-sites-play--play-impl.deno.dev/live/invoke/play/actions/deploy.ts?playId=candy-store'",
+    "component": "deno eval 'import \"deco/scripts/component.ts\"'",
+    "check": "deno fmt && deno lint && deno check dev.ts main.ts",
+    "install": "deno eval 'import \"deco/scripts/apps/install.ts\"'",
+    "uninstall": "deno eval 'import \"deco/scripts/apps/uninstall.ts\"'",
+    "bundle": "deno eval 'import \"deco/scripts/apps/bundle.ts\"' play"
   },
   "githooks": {
     "pre-commit": "check"
   },
   "lint": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     }
   },
   "fmt": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     }
   },
   "importMap": "./import_map.json",
