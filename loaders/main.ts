@@ -46,6 +46,12 @@ Deno.readTextFile = (
   return fetch(serveFileUrl + (btoa(JSON.stringify({ location: urlString.split("/"), playId: "${playId}" })))).then(response => response.text());
 };
 
+console.log(Deno.cwd());
+
+for await (const dirEntry of Deno.readDir(Deno.cwd())) {
+  console.log(dirEntry);
+}
+
 await start(manifest, {
   plugins: [
     ...plugins({
