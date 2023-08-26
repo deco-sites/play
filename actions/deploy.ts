@@ -14,12 +14,12 @@ export default async function Deploy(
   const client = await ctx.denoDeployClient();
   const files: Uint8Array[] = [];
   const entries = {
-    "deno.json": {
+    "/src/deno.json": {
       kind: "file",
       gitSha1: await calculateGitSha1(denoJson),
       size: denoJson.byteLength,
     },
-    "import_map.json": {
+    "/src/import_map.json": {
       kind: "file",
       gitSha1: await calculateGitSha1(importMapData),
       size: importMapData.byteLength,
@@ -30,7 +30,7 @@ export default async function Deploy(
   });
 
   for (const hash of neededHashes) {
-    if (hash === entries["deno.json"].gitSha1) {
+    if (hash === entries["/src/deno.json"].gitSha1) {
       files.push(denoJson);
     } else {
       files.push(importMapData);
