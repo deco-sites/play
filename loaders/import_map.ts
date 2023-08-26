@@ -19,7 +19,7 @@ export default function importMap(
         decoVersion ?? "deb638083220fffe443df521f84c9af77bd8304f"
       }/`,
       "$fresh/": `https://denopkg.com/deco-cx/fresh@${
-        freshVersion ?? "78b24bb72a837543184d3632b5d77e83db43c0c7"
+        freshVersion ?? "ce88ca45ed729f5578fecf887fc9a99fe4886d7e"
       }/`,
       "preact": "https://esm.sh/preact@10.15.1",
       "preact/": "https://esm.sh/preact@10.15.1/",

@@ -30,7 +30,7 @@ Deno.readTextFile = (
 ) => {
   const urlString = path.toString();
   if (urlString.endsWith("deno.json")) {
-    return readTextFile("./deno.json", options);
+    return readTextFile("/src/deno.json", options);
   }
   if (urlString.startsWith("http")) {
     return fetch(urlString).then(response => response.text());
@@ -38,15 +38,6 @@ Deno.readTextFile = (
   const serveFileUrl = new URL(import.meta.url).origin + "/live/invoke/play/loaders/files/serve.tsx?props=";
   return fetch(serveFileUrl + (btoa(JSON.stringify({ location: urlString.split("/"), playId: "${playId}" })))).then(response => response.text());
 };
-
-console.log(Deno.cwd())
-for await (const dirEntry of Deno.readDir('/')) {
-  console.log(dirEntry);
-}
-
-for await (const dirEntry of Deno.readDir('/src')) {
-  console.log(dirEntry);
-}
 
 await start(manifest, {
   plugins: [
