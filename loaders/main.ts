@@ -20,6 +20,7 @@ import decoManifest from "./manifest.gen.ts?playId=${playId}";
 import plugins from "${std}/plugins/mod.ts";
 import { context } from "deco/live.ts";
 import { default as sourceMapFor } from "play/commons.tsx?playId=${playId}";
+import { walk } from "std/fs/mod.ts";
 
 context.isDeploy = true;
 
@@ -46,9 +47,8 @@ Deno.readTextFile = (
   return fetch(serveFileUrl + (btoa(JSON.stringify({ location: urlString.split("/"), playId: "${playId}" })))).then(response => response.text());
 };
 
-console.log(Deno.cwd());
 
-for await (const dirEntry of Deno.readDir(Deno.cwd() + "/.")) {
+for await (const dirEntry of walk("/")) {
   console.log(dirEntry);
 }
 
