@@ -17,7 +17,7 @@ export default function main(
 import { start } from "$fresh/server.ts";
 import manifest from "./fresh.gen.ts?playId=${playId}";
 import decoManifest from "./manifest.gen.ts?playId=${playId}";
-import plugins from "${std}/plugins/mod.ts";
+import decoPlugin from "deco/plugins/deco.ts";
 import { context } from "deco/live.ts";
 import { default as sourceMapFor } from "play/commons.tsx?playId=${playId}";
 import { walk } from "std/fs/mod.ts";
@@ -49,7 +49,7 @@ Deno.readTextFile = (
 
 await start(manifest, {
   plugins: [
-    ...plugins({
+    decoPlugin({
       sourceMap: sourceMapFor(decoManifest),
       manifest: decoManifest,
       site: { namespace: "${playId}" },

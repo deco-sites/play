@@ -28,7 +28,6 @@ export default function importMap(
       "@preact/signals": "https://esm.sh/*@preact/signals@1.1.3",
       "@preact/signals-core": "https://esm.sh/@preact/signals-core@1.3.0",
       "std/": "https://deno.land/std@0.190.0/",
-      "partytown/": "https://denopkg.com/deco-cx/partytown@0.4.3/",
       "daisyui": "npm:daisyui@3.5.1",
     },
   });
