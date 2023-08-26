@@ -22,7 +22,7 @@ export default async function Deploy(
           gitSha1: await calculateGitSha1(denoJson),
           size: denoJson.byteLength,
         },
-        "/import_map.json": {
+        "import_map.json": {
           kind: "file",
           gitSha1: await calculateGitSha1(importMapData),
           size: importMapData.byteLength,
