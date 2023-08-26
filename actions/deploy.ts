@@ -14,15 +14,20 @@ export default async function Deploy(
   const client = await ctx.denoDeployClient();
   const files: Uint8Array[] = [];
   const entries = {
-    "/src/deno.json": {
-      kind: "file",
-      gitSha1: await calculateGitSha1(denoJson),
-      size: denoJson.byteLength,
-    },
-    "/src/import_map.json": {
-      kind: "file",
-      gitSha1: await calculateGitSha1(importMapData),
-      size: importMapData.byteLength,
+    "src": {
+      kind: "directory",
+      entries: {
+        "deno.json": {
+          kind: "file",
+          gitSha1: await calculateGitSha1(denoJson),
+          size: denoJson.byteLength,
+        },
+        "/import_map.json": {
+          kind: "file",
+          gitSha1: await calculateGitSha1(importMapData),
+          size: importMapData.byteLength,
+        },
+      },
     },
   } satisfies Record<string, ManifestEntry>;
   const neededHashes = await client.projectNegotiateAssets(playId, {
@@ -30,7 +35,7 @@ export default async function Deploy(
   });
 
   for (const hash of neededHashes) {
-    if (hash === entries["/src/deno.json"].gitSha1) {
+    if (hash === entries["src"].entries["deno.json"].gitSha1) {
       files.push(denoJson);
     } else {
       files.push(importMapData);
