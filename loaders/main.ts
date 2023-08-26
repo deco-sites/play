@@ -39,7 +39,7 @@ Deno.readTextFile = (
   return fetch(serveFileUrl + (btoa(JSON.stringify({ location: urlString.split("/"), playId: "${playId}" })))).then(response => response.text());
 };
 
-for await (const dirEntry of Deno.readDir('./')) {
+for await (const dirEntry of Deno.readDir('/src')) {
   console.log(dirEntry);
 }
 
