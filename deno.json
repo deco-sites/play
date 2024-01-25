@@ -1,8 +1,16 @@
 {
   "tasks": {
-    "start": "deno run -A --watch=static/,sections/,functions/ dev.ts",
-    "component": "deno eval 'import \"$live/scripts/component.ts\"'",
-    "check": "deno fmt && deno lint && deno check dev.ts main.ts"
+    "start": "deno task bundle && deno run -A --unstable --watch=static/sw.js,tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
+    "component": "deno eval 'import \"deco/scripts/component.ts\"'",
+    "check": "deno fmt && deno lint && deno check dev.ts main.ts",
+    "build": "deno run -A dev.ts build",
+    "preview": "deno run -A main.ts",
+    "gen": "deno run -A dev.ts --gen-only",
+    "release": "deno eval 'import \"deco/scripts/release.ts\"'",
+    "update": "deno eval 'import \"deco/scripts/update.ts\"'",
+    "install": "deno eval 'import \"deco/scripts/apps/install.ts\"'",
+    "uninstall": "deno eval 'import \"deco/scripts/apps/uninstall.ts\"'",
+    "bundle": "deno eval 'import \"deco/scripts/apps/bundle.ts\"' deco-sites/play"
   },
   "githooks": {
     "pre-commit": "check"
@@ -12,6 +20,12 @@
       "exclude": [
         "static/",
         "README.md"
+      ]
+    },
+    "rules": {
+      "tags": [
+        "fresh",
+        "recommended"
       ]
     }
   },
@@ -23,9 +37,32 @@
       ]
     }
   },
-  "importMap": "./import_map.json",
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
-  }
+  },
+  "imports": {
+    "deco-sites/play/": "./",
+    "$live/": "https://denopkg.com/deco-cx/live@1.52.6/",
+    "deco-sites/std/": "https://denopkg.com/deco-sites/std@1.24.2/",
+    "partytown/": "https://deno.land/x/partytown@0.4.8/",
+    "$fresh/": "https://deno.land/x/fresh@1.6.3/",
+    "preact": "https://esm.sh/preact@10.19.2",
+    "preact/": "https://esm.sh/preact@10.19.2/",
+    "preact-render-to-string": "https://esm.sh/*preact-render-to-string@5.2.4",
+    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.1",
+    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.0",
+    "twind": "https://esm.sh/twind@0.16.19",
+    "twind/": "https://esm.sh/twind@0.16.19/",
+    "std/": "https://deno.land/std@0.190.0/",
+    "prefetch": "https://deno.land/x/prefetch@0.0.6/mod.ts",
+    "deco/": "https://denopkg.com/deco-cx/deco@1.52.6/",
+    "apps/": "https://denopkg.com/deco-cx/apps@0.32.4/"
+  },
+  "exclude": [
+    "node_modules",
+    "static/",
+    "README.md"
+  ],
+  "nodeModulesDir": true
 }
