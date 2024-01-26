@@ -2,12 +2,16 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
+import * as $$$$0 from "./handlers/router.ts";
 import * as $$$$$$0 from "./sections/Topbar.tsx";
 import * as $$$$$$1 from "./sections/Links.tsx";
 import * as $$$$$$$$$$$0 from "./apps/decohub.ts";
 import * as $$$$$$$$$$$1 from "./apps/site.ts";
 
 const manifest = {
+  "handlers": {
+    "deco-sites/play/handlers/router.ts": $$$$0,
+  },
   "sections": {
     "deco-sites/play/sections/Links.tsx": $$$$$$1,
     "deco-sites/play/sections/Topbar.tsx": $$$$$$0,

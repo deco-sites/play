@@ -1,19 +1,19 @@
-import { App, AppContext as AC } from "$live/mod.ts";
-import std, { Props } from "apps/compat/std/mod.ts";
+import website, { Props } from "apps/website/mod.ts";
+import { AppContext as AC, App } from "deco/mod.ts";
 
 import manifest, { Manifest } from "../manifest.gen.ts";
 
-type StdApp = ReturnType<typeof std>;
+type WebSiteApp = ReturnType<typeof website>;
 export default function Site(
   state: Props,
 ): App<Manifest, Props, [
-  StdApp,
+  WebSiteApp,
 ]> {
   return {
     state,
     manifest,
     dependencies: [
-      std(state),
+      website(state),
     ],
   };
 }

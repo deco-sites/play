@@ -17,33 +17,25 @@
   },
   "lint": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     },
     "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ]
+      "tags": ["fresh", "recommended"]
     }
   },
   "fmt": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     }
   },
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "preact"
+    "jsxImportSource": "preact",
+    "experimentalDecorators": true
   },
   "imports": {
     "deco-sites/play/": "./",
-    "$live/": "https://denopkg.com/deco-cx/live@1.52.6/",
+    "deco/": "https://denopkg.com/deco-cx/deco@1.52.6/",
     "deco-sites/std/": "https://denopkg.com/deco-sites/std@1.24.2/",
     "partytown/": "https://deno.land/x/partytown@0.4.8/",
     "$fresh/": "https://deno.land/x/fresh@1.6.3/",
@@ -56,13 +48,8 @@
     "twind/": "https://esm.sh/twind@0.16.19/",
     "std/": "https://deno.land/std@0.190.0/",
     "prefetch": "https://deno.land/x/prefetch@0.0.6/mod.ts",
-    "deco/": "https://denopkg.com/deco-cx/deco@1.52.6/",
     "apps/": "https://denopkg.com/deco-cx/apps@0.32.4/"
   },
-  "exclude": [
-    "node_modules",
-    "static/",
-    "README.md"
-  ],
+  "exclude": ["node_modules", "static/", "README.md"],
   "nodeModulesDir": true
 }

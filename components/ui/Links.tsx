@@ -77,9 +77,7 @@ function Links(props: Props) {
 
   const maybeLink = header?.link
     ? <a href={header?.link!} target="_blank">{logoOrIcon}</a>
-    : (
-      logoOrIcon
-    );
+    : logoOrIcon;
 
   return (
     <BaseContainer background={background}>
