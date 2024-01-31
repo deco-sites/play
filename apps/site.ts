@@ -1,19 +1,26 @@
-import website, { Props } from "apps/website/mod.ts";
-import { AppContext as AC, App } from "deco/mod.ts";
+import website, { Props as WebSiteProps } from "apps/website/mod.ts";
+import admin, { Props as AdminProps } from "apps/admin/mod.ts";
+import { App, AppContext as AC } from "deco/mod.ts";
 
 import manifest, { Manifest } from "../manifest.gen.ts";
 
+export interface Props extends WebSiteProps {
+  admin: AdminProps;
+}
 type WebSiteApp = ReturnType<typeof website>;
 export default function Site(
-  state: Props,
+  props: Props,
 ): App<Manifest, Props, [
   WebSiteApp,
+  ReturnType<typeof admin>,
 ]> {
+  const { admin: adminProps, ...state } = props;
   return {
-    state,
+    state: props,
     manifest,
     dependencies: [
       website(state),
+      admin(adminProps),
     ],
   };
 }
