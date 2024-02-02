@@ -36,7 +36,7 @@
   "imports": {
     "deco-sites/play/": "./",
     "deco/": "https://denopkg.com/deco-cx/deco@810f611d3751a9907646a6b33b99213625a81afa/",
-    "deco-sites/std/": "https://denopkg.com/deco-sites/std@b8df7e4bbab156245634fc7c65fa69a31e079ef7/",
+    "deco-sites/std/": "https://denopkg.com/deco-sites/std@d00d2d6f4a5d318651dd5f3bcdc7b0219890e26f/",
     "partytown/": "https://deno.land/x/partytown@0.4.8/",
     "$fresh/": "https://deno.land/x/fresh@1.6.3/",
     "preact": "https://esm.sh/preact@10.19.2",
