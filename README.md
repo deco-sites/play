@@ -48,3 +48,5 @@ respecting folder structure. This means:
 
 Check performance best practices on
 [deco.cx's docs](https://www.deco.cx/docs).
+
+
