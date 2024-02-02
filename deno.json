@@ -35,7 +35,7 @@
   },
   "imports": {
     "deco-sites/play/": "./",
-    "deco/": "https://denopkg.com/deco-cx/deco@a53d0ce49a05a72ae6a981066a526f7736a02f9c/",
+    "deco/": "https://denopkg.com/deco-cx/deco@810f611d3751a9907646a6b33b99213625a81afa/",
     "deco-sites/std/": "https://denopkg.com/deco-sites/std@b8df7e4bbab156245634fc7c65fa69a31e079ef7/",
     "partytown/": "https://deno.land/x/partytown@0.4.8/",
     "$fresh/": "https://deno.land/x/fresh@1.6.3/",
@@ -48,7 +48,7 @@
     "twind/": "https://esm.sh/twind@0.16.19/",
     "std/": "https://deno.land/std@0.190.0/",
     "prefetch": "https://deno.land/x/prefetch@0.0.6/mod.ts",
-    "apps/": "https://denopkg.com/deco-cx/apps@c229dd7ebbceb4b79308d20512b0afc766e70586/",
+    "apps/": "https://denopkg.com/deco-cx/apps@a01222f8d79e237208de4b72626a7c785ba5493e/",
     "daisyui": "npm:daisyui@4.6.0"
   },
   "exclude": ["node_modules", "static/", "README.md"],

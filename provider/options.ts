@@ -1,11 +1,7 @@
+import * as decohub from "apps/decohub/mod.ts";
+import { randomSiteName } from "deco/engine/manifest/utils.ts";
 import { Release } from "deco/engine/releases/provider.ts";
 import { InitOptions } from "deco/plugins/deco.ts";
-import decofiles from "./decofiles.json" with { type: "json" };
-
-const bySiteConfig: Record<
-  string,
-  { decofile: Record<string, unknown>; manifestImportString: string }
-> = decofiles;
 
 const optionsCache: Record<string, InitOptions> = {};
 export const fromValue = (val: { inner: Record<string, unknown> }): Release => {
@@ -22,25 +18,63 @@ export const fromValue = (val: { inner: Record<string, unknown> }): Release => {
       latestRev = rev ?? `${Date.now()}`;
       val.inner = newState;
       onChangeCbs.forEach((cb) => cb());
+      return Promise.resolve();
     },
   };
 };
-export default async function provider(
+const sitePerHost: Record<string, string> = {};
+export default function provider(
   req: Request,
 ): Promise<InitOptions> {
   const url = new URL(req.url);
   const hostname = url.searchParams.get("__host") ?? url.hostname; // format => sites-${site}-${hash}.decocdn.com
   const siteDNSPrefix = hostname.split(".")?.[0];
   const [_ignoreSites, ...parts] = siteDNSPrefix?.split("-") ?? [];
+  let siteName: undefined | string;
   if (!Array.isArray(parts) || parts.length < 2) {
-    throw new Error("could not route request");
+    sitePerHost[hostname] ??= randomSiteName();
+    siteName = sitePerHost[hostname];
+  } else {
+    const withoutLast = parts.slice(0, -1);
+    siteName = withoutLast.join("-");
   }
-  const withoutLast = parts.slice(0, -1);
-  const siteName = withoutLast.join("-");
-  return optionsCache[siteName] ??= {
-    release: fromValue({ inner: bySiteConfig[siteName]?.decofile ?? {} }),
-    manifest: await import(bySiteConfig[siteName]?.manifestImportString).then(
-      (imp) => imp.default,
-    ),
-  };
+  const decohubName = `${siteName}/apps/decohub.ts`;
+  // the entrypoint of all apps is the decohub
+  // you should add an app array on decohub
+  return Promise.resolve(
+    optionsCache[siteName] ??= {
+      release: fromValue({
+        inner: {
+          decohub: {
+            apps: [
+              {
+                name: siteName,
+                __resolveType: "files/loaders/app.ts",
+              },
+            ],
+            __resolveType: decohubName,
+          },
+          files: {
+            __resolveType: "decohub/apps/files.ts",
+          },
+          admin: {
+            __resolveType: "decohub/apps/admin.ts",
+          },
+          [siteName]: {
+            __resolveType: `decohub/apps/${siteName}.ts`,
+          },
+        },
+      }),
+      sourceMap: {
+        [decohubName]: import.meta.resolve("apps/decohub/mod.ts"),
+      },
+      manifest: {
+        apps: {
+          [decohubName]: decohub,
+        },
+        baseUrl: import.meta.url,
+        name: siteName,
+      },
+    },
+  );
 }
