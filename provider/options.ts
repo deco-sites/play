@@ -22,21 +22,17 @@ export const fromValue = (val: { inner: Record<string, unknown> }): Release => {
     },
   };
 };
-const sitePerHost: Record<string, string> = {};
+let localhostSite: string;
 export default function provider(
   req: Request,
 ): Promise<InitOptions> {
   const url = new URL(req.url);
-  const hostname = url.searchParams.get("__host") ?? url.hostname; // format => sites-${site}-${hash}.decocdn.com
-  const siteDNSPrefix = hostname.split(".")?.[0];
-  const [_ignoreSites, ...parts] = siteDNSPrefix?.split("-") ?? [];
+  const hostname = url.searchParams.get("__host") ?? url.hostname; // format => {site}.deco.site
   let siteName: undefined | string;
-  if (!Array.isArray(parts) || parts.length < 2) {
-    sitePerHost[hostname] ??= randomSiteName();
-    siteName = sitePerHost[hostname];
+  if (hostname === "localhost") {
+    siteName = localhostSite ??= randomSiteName();
   } else {
-    const withoutLast = parts.slice(0, -1);
-    siteName = withoutLast.join("-");
+    siteName = hostname.split(".")?.[0] ?? randomSiteName();
   }
   const decohubName = `${siteName}/apps/decohub.ts`;
   // the entrypoint of all apps is the decohub
