@@ -57,6 +57,11 @@ export default function provider(
             __resolveType: "decohub/apps/admin.ts",
           },
           [siteName]: {
+            routes: [
+              {
+                __resolveType: "website/loaders/pages.ts",
+              },
+            ],
             __resolveType: `decohub/apps/${siteName}.ts`,
           },
         },
