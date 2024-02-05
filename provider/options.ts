@@ -42,6 +42,7 @@ export default function provider(
       release: fromValue({
         inner: {
           decohub: {
+            enableAdmin: true,
             apps: [
               {
                 name: siteName,
