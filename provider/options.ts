@@ -67,8 +67,10 @@ export default function provider(
           },
         },
       }),
-      sourceMap: {
-        [decohubName]: import.meta.resolve("apps/decohub/mod.ts"),
+      importMap: {
+        imports: {
+          [decohubName]: import.meta.resolve("apps/decohub/mod.ts"),
+        },
       },
       manifest: {
         apps: {
