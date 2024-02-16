@@ -57,7 +57,7 @@
     "twind/": "https://esm.sh/twind@0.16.19/",
     "std/": "https://deno.land/std@0.190.0/",
     "prefetch": "https://deno.land/x/prefetch@0.0.6/mod.ts",
-    "apps/": "https://denopkg.com/deco-cx/apps@0.32.38/",
+    "apps/": "https://denopkg.com/deco-cx/apps@0.32.39/",
     "daisyui": "npm:daisyui@4.6.0"
   },
   "exclude": [
