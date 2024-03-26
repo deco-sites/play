@@ -36,7 +36,7 @@ export default function provider(
         apps: {
           [decohubName]: decohub,
         },
-        baseUrl: join(dirname(import.meta.url), `${siteName}.ts`),
+        baseUrl: join(join(dirname(import.meta.url), ".."), `${siteName}.ts`),
         name: `site`,
       },
     },
