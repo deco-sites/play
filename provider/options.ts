@@ -37,7 +37,7 @@ export default function provider(
           [decohubName]: decohub,
         },
         baseUrl: join(dirname(import.meta.url), `${siteName}.ts`),
-        name: siteName,
+        name: `site`,
       },
     },
   );
