@@ -24,7 +24,7 @@ export default function provider(
     optionsCache[siteName] ??= {
       site: {
         name: siteName,
-        namespace: siteName,
+        namespace: `site`,
       },
       release: fromJSON({}),
       importMap: {
