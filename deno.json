@@ -36,7 +36,7 @@
   "imports": {
     "deco-sites/play/": "./",
     "deco/": "https://denopkg.com/deco-cx/deco@1.57.30/",
-    "deco-sites/std/": "https://denopkg.com/deco-sites/std@d00d2d6f4a5d318651dd5f3bcdc7b0219890e26f/",
+    "deco-sites/std/": "https://denopkg.com/deco-sites/std@f1743470773bc18db8353861be457b70b005a02f/",
     "partytown/": "https://deno.land/x/partytown@0.4.8/",
     "$fresh/": "https://deno.land/x/fresh@1.6.8/",
     "preact": "https://esm.sh/preact@10.19.2",
