@@ -44,7 +44,7 @@
   },
   "imports": {
     "deco-sites/play/": "./",
-    "deco/": "https://denopkg.com/deco-cx/deco@1.60.4/",
+    "deco/": "https://denopkg.com/deco-cx/deco@1.60.5/",
     "deco-sites/std/": "https://denopkg.com/deco-sites/std@f1743470773bc18db8353861be457b70b005a02f/",
     "partytown/": "https://deno.land/x/partytown@0.4.8/",
     "$fresh/": "https://deno.land/x/fresh@1.6.8/",
