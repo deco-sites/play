@@ -1,5 +1,6 @@
-import { start } from "$fresh/server.ts";
-import config from "./fresh.config.ts";
-import manifest from "./fresh.gen.ts";
+import { Hypervisor } from "./hypervisor.ts";
+import "deco/plugins/deco.ts";
 
-await start(manifest, config);
+const hypervisor = new Hypervisor();
+
+Deno.serve(hypervisor.fetch.bind(hypervisor));

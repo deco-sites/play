@@ -1,11 +1,7 @@
 {
   "tasks": {
-    "start": "deno task bundle && deno run -A --unstable --watch=static/sw.js,tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
-    "component": "deno eval 'import \"deco/scripts/component.ts\"'",
-    "check": "deno fmt && deno lint && deno check dev.ts main.ts",
-    "build": "deno run -A dev.ts build",
-    "preview": "deno run -A main.ts",
-    "gen": "deno run -A dev.ts --gen-only",
+    "start": "deno run -A --no-prompt --unstable-worker-options main.ts",
+    "check": "deno fmt && deno lint && deno check main.ts",
     "release": "deno eval 'import \"deco/scripts/release.ts\"'",
     "update": "deno eval 'import \"deco/scripts/update.ts\"'",
     "install": "deno eval 'import \"deco/scripts/apps/install.ts\"'",
@@ -17,24 +13,15 @@
   },
   "lint": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     },
     "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ]
+      "tags": ["fresh", "recommended"]
     }
   },
   "fmt": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     }
   },
   "compilerOptions": {
@@ -60,10 +47,6 @@
     "apps/": "https://denopkg.com/deco-cx/apps@0.36.5/",
     "daisyui": "npm:daisyui@4.6.0"
   },
-  "exclude": [
-    "node_modules",
-    "static/",
-    "README.md"
-  ],
+  "exclude": ["node_modules", "static/", "README.md"],
   "nodeModulesDir": true
 }
