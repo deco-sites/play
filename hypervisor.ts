@@ -50,7 +50,7 @@ export class Hypervisor {
         id: isolateVolume,
         cpuLimit: 1,
         memoryLimit: "512Mi",
-        cwd: join(Deno.cwd(), USER_WORKERS_FOLDER, btoa(isolateVolume), "/"),
+        cwd: join("/tmp", USER_WORKERS_FOLDER, btoa(isolateVolume), "/"),
         envVars: {},
       });
       this.workers.set(isolateVolume, worker);
