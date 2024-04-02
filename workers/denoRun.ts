@@ -28,7 +28,7 @@ export class DenoRun implements Isolate {
     this.inflightRequests++;
     const url = new URL(req.url);
     url.port = `${this.port}`;
-    url.hostname = "127.0.0.1";
+    url.hostname = "0.0.0.0";
     const nReq = new Request(url.toString(), req);
     return fetch(nReq).finally(() => {
       this.inflightRequests--;
