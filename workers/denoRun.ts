@@ -71,6 +71,7 @@ export class DenoRun implements Isolate {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
+        "--node-modules-dir=false",
         ...buildPermissionsArgs(this.options.permissions),
         "main.ts",
       ],
