@@ -1,7 +1,7 @@
 import { defaultFs, mount, MountPoint } from "deco/scripts/mount.ts";
+import { debounce } from "std/async/mod.ts";
 import { DenoRun } from "./denoRun.ts";
 import { Isolate } from "./isolate.ts";
-import { debounce } from "std/async/mod.ts";
 
 export const SERVER_SOCK = "server.sock";
 export interface WorkerOptions {
@@ -17,13 +17,15 @@ export class UserWorker {
   protected isolate: Promise<Isolate>;
   protected mountPoint: MountPoint;
   protected portsTaken = new Map<number, boolean>();
+  protected site: string;
 
   constructor(protected options: WorkerOptions) {
+    const volUrl = new URL(options.id);
+    this.site = volUrl.searchParams.get("site")!;
     const fs = defaultFs(this.options.cwd);
     this.mountPoint = mount({
       fs,
-      vol:
-        `https://admin.deco.cx/live/invoke/deco-sites/admin/loaders/environments/watch.ts?site=${this.options.id}&name=Staging&head=root`,
+      vol: volUrl.toString(),
     });
     const { promise, resolve, reject } = Promise.withResolvers<void>();
     const timeout = setTimeout(() => {
@@ -47,7 +49,8 @@ export class UserWorker {
             return this.isolate.then(async (isolate) => {
               await this.gracefulShutdown(isolate);
               this.isolate = this.start();
-              return this.isolate.then(() => {});
+              await this.isolate;
+              return Promise.resolve();
             });
           });
         }, 200);
@@ -78,6 +81,7 @@ export class UserWorker {
         envVars: {
           ...this.options.envVars,
           FRESH_ESBUILD_LOADER: "portable",
+          DECO_SITE_NAME: this.site,
         },
         permissions: {
           env: "inherit",
