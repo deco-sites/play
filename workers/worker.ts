@@ -1,4 +1,4 @@
-import { mount, MountPoint } from "deco/scripts/mount.ts";
+import { defaultFs, mount, MountPoint } from "deco/scripts/mount.ts";
 import { EventEmitter } from "node:events";
 import { delay } from "std/async/mod.ts";
 import { Command } from "./commands/command.ts";
@@ -23,7 +23,8 @@ export interface WorkerMount {
 export class UserWorker {
   protected inflightRequests = 0;
   protected inflightZeroEmitter = new EventEmitter();
-  protected worker: Promise<WorkerMount>;
+  protected worker: Promise<Worker>;
+  protected mountPoint: MountPoint;
   protected inflightCommands = new Map<
     string,
     ReturnType<typeof Promise.withResolvers<WorkerState>>
@@ -31,12 +32,42 @@ export class UserWorker {
   protected lastSeenState: WorkerState | undefined;
 
   constructor(protected options: WorkerOptions) {
-    this.worker = this.restart();
+    const fs = defaultFs(this.options.cwd);
+    this.mountPoint = mount({
+      fs,
+      vol:
+        `https://admin.deco.cx/live/invoke/deco-sites/admin/loaders/environments/watch.ts?site=${this.options.id}&name=Staging&head=root`,
+    });
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
+    const timeout = setTimeout(() => {
+      reject(new Error(`time out waiting for ${this.options.id}`));
+    }, 15_000);
+    this.mountPoint.onReady = () => {
+      clearTimeout(timeout);
+      resolve();
+      const watcher = fs.watchFs(this.options.cwd, { recursive: true });
+      this.mountPoint.onUnmount = () => {
+        watcher.close();
+      };
+      (async () => {
+        for await (const event of watcher) {
+          if (
+            event.paths.some((path) =>
+              path.endsWith(".ts") || path.endsWith(".tsx")
+            )
+          ) {
+            await this.worker;
+            await this.restart();
+          }
+        }
+      })();
+    };
+
+    this.worker = promise.then(() => {
+      return this.restart(true);
+    });
   }
 
-  getWorker() {
-    return this.worker.then((m) => m.worker);
-  }
   async sendCommand(
     cmd: Command,
     _worker?: Worker | undefined,
@@ -44,17 +75,20 @@ export class UserWorker {
     const id: string = crypto.randomUUID();
     const resolvers = Promise.withResolvers<WorkerState>();
     this.inflightCommands.set(id, resolvers);
-    const worker = _worker ?? await this.getWorker();
+    const worker = _worker ?? await this.worker;
     worker.postMessage({ id, command: cmd });
     return resolvers.promise;
   }
 
-  async gracefulShutdown(wkMount?: WorkerMount): Promise<void> {
+  async gracefulShutdown(worker?: Worker): Promise<void> {
     const { promise, resolve, reject } = Promise.withResolvers<void>();
-    if (wkMount) {
-      await this.sendCommand({ name: "stop" }, wkMount.worker).catch(reject);
+    if (worker) {
+      console.log("stopping");
+      await this.sendCommand({ name: "stop" }, worker).catch(reject);
+      console.log("stopped");
       const inflightZero = Promise.withResolvers<void>();
       if (this.inflightRequests > 0) {
+        console.log("inflight");
         this.inflightZeroEmitter.on("zero", () => {
           inflightZero.resolve();
         });
@@ -62,15 +96,19 @@ export class UserWorker {
         inflightZero.resolve();
       }
       await Promise.race([inflightZero.promise, delay(2_000)]); // timeout of 2s
+      console.log("resolved");
       for (const inflightPromise of this.inflightCommands.values()) {
         inflightPromise.reject(new Error("Worker is restarting"));
       }
-      wkMount.worker.terminate();
-      wkMount.mountPoint.unmount();
+      this.inflightCommands.clear();
+      console.log("terminating");
+      worker.terminate();
+      console.log("terminated");
       await waitForPort(this.options.port, {
         timeout: 30_000,
         listening: false,
       });
+      console.log("port available");
       resolve();
     } else {
       resolve();
@@ -78,11 +116,11 @@ export class UserWorker {
 
     return promise;
   }
-  async restart(): Promise<WorkerMount> {
-    const current = typeof this.worker !== "undefined"
+  async restart(firstLoad = false): Promise<Worker> {
+    const current = !firstLoad && typeof this.worker !== "undefined"
       ? await this.worker
       : undefined;
-    this.worker = new Promise<WorkerMount>((resolve, reject) => {
+    this.worker = new Promise<Worker>((resolve, reject) => {
       this.gracefulShutdown(current).then(() => {
         const worker = new Worker(
           new URL("./runner.ts", import.meta.url).href,
@@ -119,57 +157,47 @@ export class UserWorker {
         };
 
         worker.onerror = (err) => {
+          err.stopPropagation();
+          err.preventDefault();
+          err.stopImmediatePropagation();
           console.log("on error");
-          console.log(err.message);
-          reject(err);
+          console.log(err);
+          return null;
         };
 
         worker.onmessageerror = (err) => {
+          console.log("message error", err);
           reject(err);
         };
 
-        this.mountAndRun(worker).then(resolve).catch(reject);
+        this.sendCommand({
+          id: this.options.id,
+          name: "run",
+          cwd: this.options.cwd,
+          port: this.options.port,
+          envVars: {
+            ...this.options.envVars,
+            PORT: `${this.options.port}`,
+            FRESH_ESBUILD_LOADER: "portable",
+          },
+        }, worker)
+          .then(async (state) => {
+            if (state.err) {
+              reject(new Error(state.err));
+              return;
+            }
+            await waitForPort(this.options.port, {
+              timeout: 120000,
+              listening: true,
+            });
+            resolve(worker);
+          })
+          .catch((err) => {
+            reject(err);
+          });
       }).catch(reject);
     });
     return this.worker;
-  }
-
-  private mountAndRun(
-    worker: Worker,
-  ): Promise<WorkerMount> {
-    const { promise, resolve, reject } = Promise.withResolvers<WorkerMount>();
-    const mountPoint = mount({
-      vol:
-        `https://admin.deco.cx/live/invoke/deco-sites/admin/loaders/environments/watch.ts?site=${this.options.id}&name=Staging&head=root`,
-    });
-    mountPoint.onReady = () => {
-      this.sendCommand({
-        id: this.options.id,
-        name: "run",
-        cwd: this.options.cwd,
-        port: this.options.port,
-        envVars: {
-          ...this.options.envVars,
-          PORT: `${this.options.port}`,
-          FRESH_ESBUILD_LOADER: "portable",
-        },
-      }, worker)
-        .then(async (state) => {
-          if (state.err) {
-            reject(new Error(state.err));
-            return;
-          }
-          await waitForPort(this.options.port, {
-            timeout: 120000,
-            listening: true,
-          });
-          resolve({ worker, mountPoint });
-        })
-        .catch((err) => {
-          reject(err);
-        });
-    };
-    return promise;
   }
 
   async fetch(req: Request): Promise<Response> {

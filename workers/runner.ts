@@ -1,4 +1,4 @@
-import { handleCommand } from "./commands/command.ts";
+import { Command, handleCommand } from "./commands/command.ts";
 import { RunnerOptions } from "./commands/run.ts";
 
 export interface WorkerState {
@@ -24,15 +24,31 @@ const serialize = (state: WorkerState): WorkerState => {
   }
   return copy;
 };
-// @ts-ignore: trust-me
-self.onmessage = async (evt: { data: { id: string; command: Command } }) => {
-  const cmd = evt.data;
-  STATE = await handleCommand(STATE, cmd.command).catch((err) => {
-    return { ...STATE, err: err.message };
-  });
-  // @ts-ignore: trust-me
-  self.postMessage({
-    state: serialize(STATE),
-    id: cmd.id,
-  });
-};
+
+self.addEventListener(
+  "message",
+  async (evt: { data: { id: string; command: Command } }) => {
+    const cmd = evt.data;
+    STATE = await handleCommand(STATE, cmd.command).catch((err) => {
+      return { ...STATE, err: err.message };
+    });
+    // @ts-ignore: trust-me
+    self.postMessage({
+      state: serialize(STATE),
+      id: cmd.id,
+    });
+  },
+);
+
+export class Runner {
+  protected STATE: WorkerState = { running: false };
+  constructor() {}
+  async run(
+    command: Command,
+  ): Promise<WorkerState> {
+    this.STATE = await handleCommand(STATE, command).catch((err) => {
+      return { ...STATE, err: err.message };
+    });
+    return this.STATE;
+  }
+}

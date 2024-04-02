@@ -38,17 +38,21 @@ const commandHandlers: Record<
     if (!await exists(pathTs)) {
       throw new Error(`main.ts not found for ${cmd.cwd}`);
     }
-    import(pathTs); // do not await?
+    import(`${pathTs}?qs=${crypto.randomUUID()}`); // do not await?
     return {
       ...state,
       id: cmd.id,
       running: true,
-      options: cmd,
+      options: {
+        cwd: cmd.cwd,
+        envVars: cmd.envVars,
+        port: cmd.port,
+      },
     };
   },
 };
 
-export const handleCommand = (
+export const handleCommand = async (
   state: WorkerState,
   cmd: Command,
 ): Promise<WorkerState> => {
@@ -56,5 +60,5 @@ export const handleCommand = (
   if (!handler) {
     throw new Error(`Command handler not found for ${cmd.name}`);
   }
-  return handler(state, cmd);
+  return await handler(state, cmd);
 };

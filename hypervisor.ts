@@ -31,7 +31,7 @@ export class Hypervisor {
   }
 
   public fetch(req: Request): Promise<Response> {
-    const workerId = this.workerId(req);
+    const workerId = "tiglon-precious-59";//this.workerId(req);
     let worker = this.workers.get(workerId);
     if (!worker) {
       const port = this.currentPort++;
@@ -47,6 +47,6 @@ export class Hypervisor {
       });
       this.workers.set(workerId, worker);
     }
-    return worker.fetch(req) as unknown as Promise<Response>;
+    return worker.fetch(req);
   }
 }
