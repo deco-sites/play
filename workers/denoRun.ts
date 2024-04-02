@@ -9,7 +9,6 @@ const buildPermissionsArgs = (
 ): string[] => {
   return ["-A"];
 };
-//const textDecoder = new TextDecoder();
 const portPool = new PortPool();
 export class DenoRun implements Isolate {
   private disposing = false;
