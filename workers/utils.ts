@@ -1,3 +1,14 @@
+export const isListening = async (port: number): Promise<boolean> => {
+  try {
+    // Try to connect to the port
+    const conn = await Deno.connect({ port, transport: "tcp" });
+    conn.close();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export async function waitForPort(
   port: number,
   options: { listening?: boolean; timeout?: number } = {},
@@ -5,18 +16,8 @@ export async function waitForPort(
   const { listening = true, timeout = 10000 } = options;
   const startTime = Date.now();
   while (true) {
-    try {
-      // Try to connect to the port
-      const conn = await Deno.connect({ port, transport: "tcp" });
-      conn.close();
-      if (listening) {
-        return;
-      }
-    } catch {
-      if (!listening) {
-        return;
-      }
-      // If connection fails, wait for a short time before trying again
+    if (listening === await isListening(port)) {
+      return;
     }
     // Check if timeout is reached
     if (Date.now() - startTime >= timeout) {
