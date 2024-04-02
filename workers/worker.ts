@@ -41,6 +41,7 @@ export class UserWorker {
               JSON.stringify({
                 ...parsed,
                 imports: { ...parsed?.imports ?? {}, ...MY_IMPORTS },
+                nodeModulesDir: false
               }),
             );
           } catch {
