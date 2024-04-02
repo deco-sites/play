@@ -74,6 +74,7 @@ export class DenoRun implements Isolate {
       args: [
         "run",
         "--node-modules-dir=false",
+        "--unstable-hmr", // remove this and let restart isolate work.
         ...buildPermissionsArgs(this.options.permissions),
         "main.ts",
       ],

@@ -23,7 +23,6 @@ const MY_IMPORTS = denoJSON.imports;
 export class UserWorker {
   protected isolate: Promise<Isolate>;
   protected mountPoint: MountPoint;
-  protected portsTaken = new Map<number, boolean>();
   protected site: string;
 
   constructor(protected options: WorkerOptions) {
@@ -90,7 +89,7 @@ export class UserWorker {
               path.endsWith(".ts") || path.endsWith(".tsx")
             )
           ) {
-            restartIsolate();
+            //restartIsolate(); TODO(mcandeia) this should be removed if hmr is disabled.
           }
         }
       })();
