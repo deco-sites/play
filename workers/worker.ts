@@ -40,7 +40,7 @@ export class UserWorker {
               path,
               JSON.stringify({
                 ...parsed,
-                imports: { ...parsed, ...MY_IMPORTS },
+                imports: { ...parsed?.imports ?? {}, ...MY_IMPORTS },
               }),
             );
           } catch {
