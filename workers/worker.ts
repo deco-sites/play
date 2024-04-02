@@ -1,8 +1,8 @@
 import { defaultFs, mount, MountPoint } from "deco/scripts/mount.ts";
 import { debounce } from "std/async/mod.ts";
+import denoJSON from "../deno.json" with { type: "json" };
 import { DenoRun } from "./denoRun.ts";
 import { Isolate } from "./isolate.ts";
-import denoJSON from "../deno.json" with { type: "json" };
 
 export const SERVER_SOCK = "server.sock";
 export interface WorkerOptions {
