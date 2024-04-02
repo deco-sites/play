@@ -2,6 +2,7 @@ import { defaultFs, mount, MountPoint } from "deco/scripts/mount.ts";
 import { debounce } from "std/async/mod.ts";
 import { DenoRun } from "./denoRun.ts";
 import { Isolate } from "./isolate.ts";
+import denoJSON from "../deno.json" with { type: "json" };
 
 export const SERVER_SOCK = "server.sock";
 export interface WorkerOptions {
@@ -13,6 +14,10 @@ export interface WorkerOptions {
   id: string;
 }
 
+const DENOJSON_FILE = "deno.json";
+
+const MY_IMPORTS = denoJSON.imports;
+
 export class UserWorker {
   protected isolate: Promise<Isolate>;
   protected mountPoint: MountPoint;
@@ -22,7 +27,29 @@ export class UserWorker {
   constructor(protected options: WorkerOptions) {
     const volUrl = new URL(options.id);
     this.site = volUrl.searchParams.get("site")!;
-    const fs = defaultFs(this.options.cwd);
+    const defaultFileSystem = defaultFs(this.options.cwd);
+    const fs: typeof defaultFileSystem = {
+      ...defaultFileSystem,
+      writeTextFile: (path, content) => {
+        if (
+          path.toString().endsWith(DENOJSON_FILE) && typeof content === "string"
+        ) {
+          try {
+            const parsed: typeof denoJSON = JSON.parse(content);
+            return defaultFileSystem.writeTextFile(
+              path,
+              JSON.stringify({
+                ...parsed,
+                imports: { ...parsed, ...MY_IMPORTS },
+              }),
+            );
+          } catch {
+            return defaultFileSystem.writeTextFile(path, content);
+          }
+        }
+        return defaultFileSystem.writeTextFile(path, content);
+      },
+    };
     this.mountPoint = mount({
       fs,
       vol: volUrl.toString(),
