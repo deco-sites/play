@@ -44,22 +44,25 @@ export class Hypervisor {
     if (typeof isolateVolume !== "string") {
       return Promise.resolve(new Response(null, { status: 404 }));
     }
-    let worker = this.workers.get(isolateVolume);
+    const isolateVolumeUrl = URL.canParse(isolateVolume)
+      ? isolateVolume
+      : `https://admin.deco.cx/live/invoke/deco-sites/admin/loaders/environments/watch.ts?site=${isolateVolume}&head=root&name=Staging`;
+    let worker = this.workers.get(isolateVolumeUrl);
     if (!worker) {
       worker = new UserWorker({
-        id: isolateVolume,
+        id: isolateVolumeUrl,
         cpuLimit: 1,
         memoryLimit: "512Mi",
-        cwd: join("/tmp", USER_WORKERS_FOLDER, btoa(isolateVolume), "/"),
+        cwd: join("/tmp", USER_WORKERS_FOLDER, btoa(isolateVolumeUrl), "/"),
         envVars: {},
       });
-      this.workers.set(isolateVolume, worker);
+      this.workers.set(isolateVolumeUrl, worker);
     }
     return worker.fetch(new Request(url, req)).then((response) => {
       if (shouldAddCookie) {
         setCookie(response.headers, {
           name: DECO_VOLUME_COOKIE_NAME,
-          value: isolateVolume,
+          value: isolateVolumeUrl,
           path: "/",
           sameSite: "Strict",
         });
