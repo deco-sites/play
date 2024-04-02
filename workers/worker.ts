@@ -16,6 +16,8 @@ export interface WorkerOptions {
 
 const DENOJSON_FILE = "deno.json";
 
+const DENO_DIR_ENV_VAR = "DENO_DIR";
+const denoDir = Deno.env.get(DENO_DIR_ENV_VAR);
 const MY_IMPORTS = denoJSON.imports;
 
 export class UserWorker {
@@ -41,7 +43,7 @@ export class UserWorker {
               JSON.stringify({
                 ...parsed,
                 imports: { ...parsed?.imports ?? {}, ...MY_IMPORTS },
-                nodeModulesDir: false
+                nodeModulesDir: false,
               }),
             );
           } catch {
@@ -108,6 +110,7 @@ export class UserWorker {
         cwd: this.options.cwd,
         envVars: {
           ...this.options.envVars,
+          ...denoDir ? { [DENO_DIR_ENV_VAR]: denoDir } : {},
           FRESH_ESBUILD_LOADER: "portable",
           DECO_SITE_NAME: this.site,
         },
