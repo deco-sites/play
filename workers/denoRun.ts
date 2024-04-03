@@ -4,10 +4,30 @@ import { Isolate, IsolateOptions } from "./isolate.ts";
 import PortPool from "./portpool.ts";
 import { isListening, waitForPort } from "./utils.ts";
 
+const permCache: Record<string, Deno.PermissionState> = {};
 const buildPermissionsArgs = (
-  _perm?: Deno.PermissionOptionsObject,
+  perm?: Deno.PermissionOptionsObject,
 ): string[] => {
-  return ["-A"];
+  if (!perm) {
+    return ["-A"];
+  }
+  const args: string[] = [];
+  for (const [key, value] of Object.entries(perm)) {
+    if (value === "inherit") {
+      permCache[key] ??= Deno.permissions.querySync({
+        name: key as keyof Deno.PermissionOptionsObject,
+      }).state;
+      const access = permCache[key];
+      access === "granted" && args.push(`--allow-${key}`);
+    } else if (value === true) {
+      args.push(`--allow-${key}`);
+    } else if (Array.isArray(value) || typeof value === "string") {
+      const values = Array.isArray(value) ? value : [value];
+      args.push(`--allow-${key}=${values.join(",")}`);
+    }
+  }
+
+  return args;
 };
 const portPool = new PortPool();
 export class DenoRun implements Isolate {
@@ -73,6 +93,7 @@ export class DenoRun implements Isolate {
     const command = new Deno.Command(Deno.execPath(), {
       args: [
         "run",
+        "--no-prompt",
         "--node-modules-dir=false",
         "--unstable-hmr", // remove this and let restart isolate work.
         ...buildPermissionsArgs(this.options.permissions),

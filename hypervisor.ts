@@ -6,8 +6,10 @@ const USER_WORKERS_FOLDER = Deno.env.get("USER_WORKERS_FOLDER") ?? ".workers";
 const workerIdParam = "__vol";
 const DECO_VOLUME_COOKIE_NAME = "deco_vol";
 const COOKIE_MARKER = "@";
+const NO_ACTIVITY_TIMEOUT = 30_000;
 export class Hypervisor {
   private workers = new Map<string, UserWorker>();
+  private timers = new Map<string, ReturnType<typeof setTimeout>>();
   constructor() {
   }
 
@@ -58,6 +60,17 @@ export class Hypervisor {
       });
       this.workers.set(isolateVolumeUrl, worker);
     }
+    this.timers.has(isolateVolumeUrl) &&
+      clearTimeout(this.timers.get(isolateVolumeUrl)!);
+    this.timers.set(
+      isolateVolumeUrl,
+      setTimeout(async () => {
+        console.log("stopping worker", isolateVolumeUrl);
+        this.workers.delete(isolateVolumeUrl);
+        this.timers.delete(isolateVolumeUrl);
+        await worker.stop();
+      }, NO_ACTIVITY_TIMEOUT),
+    );
     return worker.fetch(new Request(url, req)).then((response) => {
       if (shouldAddCookie) {
         setCookie(response.headers, {
@@ -68,6 +81,9 @@ export class Hypervisor {
         });
       }
       return response;
+    }).catch((err) => {
+      console.error("error", err);
+      return new Response(null, { status: 500 });
     });
   }
 }

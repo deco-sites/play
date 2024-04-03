@@ -70,7 +70,7 @@ export class UserWorker {
       (async () => {
         let queue = Promise.resolve();
 
-        const restartIsolate = debounce(() => {
+        const _restartIsolate = debounce(() => {
           if (typeof this.isolate === "undefined") {
             return;
           }
@@ -129,9 +129,15 @@ export class UserWorker {
     await isolate.waitUntilReady();
     return isolate;
   }
+  async stop(): Promise<void> {
+    this.mountPoint.unmount();
+    await this.gracefulShutdown(await this.isolate);
+  }
 
-  async fetch(req: Request): Promise<Response> {
-    const isolate = await this.isolate;
-    return isolate.fetch(req);
+  fetch(req: Request): Promise<Response> {
+    return this.isolate.then((isolate) => isolate.fetch(req)).catch((err) => {
+      console.error("isolate not available", err);
+      return new Response(null, { status: 500 });
+    });
   }
 }
