@@ -42,7 +42,7 @@ respecting folder structure. This means:
 1. Add `.tsx` files on `components` folder only
 1. Add preact hooks on `sdk` folder.
 1. To make a component editable, create it on the `components` folder and add an
-   `export { default }` on the `sections` folder
+   `export { default }` on the `sections` folder.
 1. To add JavaScript to the browser, create a component on the `components`
    folder and add an `export { default }` on the islands folder
 
