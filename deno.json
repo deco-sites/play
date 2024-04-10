@@ -17,24 +17,15 @@
   },
   "lint": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     },
     "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ]
+      "tags": ["fresh", "recommended"]
     }
   },
   "fmt": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     }
   },
   "compilerOptions": {
@@ -44,7 +35,7 @@
   },
   "imports": {
     "deco-sites/play/": "./",
-    "deco/": "https://denopkg.com/deco-cx/deco@1.60.20/",
+    "deco/": "https://denopkg.com/deco-cx/deco@1.60.24/",
     "deco-sites/std/": "https://denopkg.com/deco-sites/std@f1743470773bc18db8353861be457b70b005a02f/",
     "partytown/": "https://deno.land/x/partytown@0.4.8/",
     "$fresh/": "https://deno.land/x/fresh@1.6.8/",
@@ -60,10 +51,6 @@
     "apps/": "https://denopkg.com/deco-cx/apps@0.35.41/",
     "daisyui": "npm:daisyui@4.6.0"
   },
-  "exclude": [
-    "node_modules",
-    "static/",
-    "README.md"
-  ],
+  "exclude": ["node_modules", "static/", "README.md"],
   "nodeModulesDir": true
 }
