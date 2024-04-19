@@ -47,8 +47,8 @@
     "daisyui": "npm:daisyui@4.6.0",
     "fast-json-patch": "npm:fast-json-patch@3.1.1",
     "@cloudflare/workers-types": "npm:@cloudflare/workers-types@4.20240208.0",
-    "file:///Users/marcoscandeia/workspace/realtime/src/ws.ts": "./ws.ts",
-    "file:///Users/marcoscandeia/workspace/realtime/src/fs.ts": "./fs.ts"
+    "https://denopkg.com/deco-cx/realtime@b299319cd6b13b4077046841331f35609dc3ebd5/src/ws.ts": "./ws.ts",
+    "https://denopkg.com/deco-cx/realtime@b299319cd6b13b4077046841331f35609dc3ebd5/src/fs.ts": "./fs.ts"
   },
   "exclude": ["node_modules", "static/", "README.md"],
   "nodeModulesDir": true
