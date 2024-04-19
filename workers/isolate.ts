@@ -1,7 +1,8 @@
 export interface Isolate extends AsyncDisposable {
-  isRunning: () => Promise<boolean>;
+  isRunning: () => boolean;
   waitUntilReady: (timeoutMs?: number) => Promise<void>;
   fetch: (req: Request) => Promise<Response>;
+  start: () => void;
 }
 
 export interface IsolateOptions {

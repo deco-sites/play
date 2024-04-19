@@ -2,7 +2,7 @@ import EventEmitter from "node:events";
 import { delay } from "std/async/delay.ts";
 import { Isolate, IsolateOptions } from "./isolate.ts";
 import PortPool from "./portpool.ts";
-import { isListening, waitForPort } from "./utils.ts";
+import { waitForPort } from "./utils.ts";
 
 const permCache: Record<string, Deno.PermissionState> = {};
 const buildPermissionsArgs = (
@@ -31,18 +31,44 @@ const buildPermissionsArgs = (
 };
 const portPool = new PortPool();
 export class DenoRun implements Isolate {
-  private disposing = false;
-  private ctrl = new AbortController();
-  protected child: Deno.ChildProcess;
-  protected cleanUpPromises: Promise<void>;
+  private ctrl: AbortController | undefined;
+  protected child: Deno.ChildProcess | undefined;
+  protected cleanUpPromises: Promise<void> | undefined;
   protected inflightRequests = 0;
   protected inflightZeroEmitter = new EventEmitter();
   protected port: number;
+  protected disposed:
+    | ReturnType<typeof Promise.withResolvers<void>>
+    | undefined;
   constructor(protected options: IsolateOptions) {
     this.port = portPool.get();
+    this.start();
+  }
+  start(): void {
+    if (this.isRunning()) {
+      return;
+    }
+    this.ctrl = new AbortController();
+    this.disposed = Promise.withResolvers<void>();
+    this.ctrl.signal.onabort = this.dispose.bind(this);
     const [child, cleanUpPromises] = this.spawn();
     this.child = child;
     this.cleanUpPromises = cleanUpPromises;
+  }
+  async dispose() {
+    this.cleanUpPromises && await this.cleanUpPromises;
+    const inflightZero = Promise.withResolvers<void>();
+    if (this.inflightRequests > 0) {
+      this.inflightZeroEmitter.on("zero", () => {
+        inflightZero.resolve();
+      });
+    } else {
+      inflightZero.resolve();
+    }
+    await Promise.race([inflightZero.promise, delay(10_000)]); // timeout of 10s
+    this.child && this.child.kill("SIGKILL");
+    portPool.free(this.port);
+    this.disposed?.resolve();
   }
   fetch(req: Request): Promise<Response> {
     this.inflightRequests++;
@@ -59,29 +85,15 @@ export class DenoRun implements Isolate {
     });
   }
   async [Symbol.asyncDispose](): Promise<void> {
-    if (this.disposing) {
-      return;
+    try {
+      !this.ctrl?.signal.aborted && this.ctrl?.abort();
+    } finally {
+      await this.child?.status;
+      await Promise.race([this.disposed?.promise, delay(10_000)]); // timeout of 10s
     }
-    this.disposing = true;
-    if (!this.ctrl.signal.aborted) {
-      this.ctrl.abort();
-    }
-    await this.cleanUpPromises;
-    const inflightZero = Promise.withResolvers<void>();
-    if (this.inflightRequests > 0) {
-      this.inflightZeroEmitter.on("zero", () => {
-        inflightZero.resolve();
-      });
-    } else {
-      inflightZero.resolve();
-    }
-    await Promise.race([inflightZero.promise, delay(10_000)]); // timeout of 10s
-    this.child.kill("SIGKILL");
-    portPool.free(this.port);
-    return Promise.resolve();
   }
-  isRunning(): Promise<boolean> {
-    return isListening(this.port);
+  isRunning(): boolean {
+    return !this.ctrl?.signal.aborted;
   }
   async waitUntilReady(timeoutMs?: number): Promise<void> {
     await waitForPort(this.port, {
@@ -97,7 +109,7 @@ export class DenoRun implements Isolate {
         "--node-modules-dir=false",
         "--unstable-hmr", // remove this and let restart isolate work.
         ...buildPermissionsArgs(this.options.permissions),
-        "main.ts",
+        "dev.ts",
       ],
       cwd: this.options.cwd,
       stdout: "inherit",
@@ -105,6 +117,12 @@ export class DenoRun implements Isolate {
       env: { ...this.options.envVars, PORT: `${this.port}` },
     });
     const child = command.spawn();
+    child.status.then((status) => {
+      if (status.code !== 0) {
+        console.error("child process failed", status);
+        this.ctrl?.abort();
+      }
+    });
     return [child, Promise.resolve()];
   }
 }

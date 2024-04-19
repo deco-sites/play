@@ -22,8 +22,8 @@ export class UserWorker {
     this.isolate = this.start();
   }
 
-  async gracefulShutdown(worker?: Isolate): Promise<void> {
-    await worker?.[Symbol.asyncDispose]();
+  async gracefulShutdown(isolate?: Isolate): Promise<void> {
+    await isolate?.[Symbol.asyncDispose]();
   }
   async start(): Promise<Isolate> {
     const isolate = new DenoRun(
@@ -55,8 +55,15 @@ export class UserWorker {
     await this.gracefulShutdown(await this.isolate);
   }
 
-  fetch(req: Request): Promise<Response> {
-    return this.isolate.then((isolate) => isolate.fetch(req)).catch((err) => {
+  async fetch(req: Request): Promise<Response> {
+    const isolate = await this.isolate.then(async (isolate) => {
+      if (!isolate.isRunning()) {
+        isolate.start();
+        await isolate.waitUntilReady();
+      }
+      return isolate;
+    });
+    return isolate.fetch(req).catch((err) => {
       console.error("isolate not available", err);
       return new Response(null, { status: 500 });
     });

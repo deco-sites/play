@@ -14,14 +14,13 @@ export class Hypervisor {
   }
 
   public fetch(req: Request): Promise<Response> {
-    console.log(req.headers);
-    console.log(req.headers.get("host"), req.headers.get("x-forwarded-for"));
-    // do some domain-based routing
     const url = new URL(req.url);
     const locator = Locator.fromHostname(url.hostname);
     if (!locator) {
       return Promise.resolve(new Response(null, { status: 404 }));
     }
+    const isInternal = url.hostname.endsWith(".svc.cluster.local") ||
+      url.hostname === ("localhost");
 
     const cwd = join(
       Deno.cwd(),
@@ -29,7 +28,7 @@ export class Hypervisor {
       Locator.stringify(locator),
       "/",
     );
-    if (url.pathname.startsWith("/volumes")) {
+    if (url.pathname.startsWith("/volumes") && isInternal) {
       let realtime = this.realtimeFs.get(cwd);
       if (!realtime) {
         const state = new HypervisorRealtimeState({ dir: cwd });
