@@ -35,10 +35,8 @@ export const createDurableFS = (state: RealtimeState) => {
       try {
         const dirEntries = await storage.list();
         return [
-          ...dirEntries.keys().filter((key: string) =>
-            key.startsWith(filepath)
-          ),
-        ];
+          ...dirEntries.keys(),
+        ].filter((key: string) => key.startsWith(filepath));
       } catch (error) {
         console.error("Error reading directory:", error);
         throw error;
