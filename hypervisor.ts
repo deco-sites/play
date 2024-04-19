@@ -1,87 +1,66 @@
-import { getCookies, setCookie } from "std/http/cookie.ts";
 import { join } from "std/path/mod.ts";
+import { Env, Realtime } from "./deps.ts";
+import { Locator } from "./locator.ts";
+import { HypervisorRealtimeState } from "./realtime/object.ts";
 import { UserWorker } from "./workers/worker.ts";
 
 const USER_WORKERS_FOLDER = Deno.env.get("USER_WORKERS_FOLDER") ?? ".workers";
-const workerIdParam = "__vol";
-const DECO_VOLUME_COOKIE_NAME = "deco_vol";
-const COOKIE_MARKER = "@";
 const NO_ACTIVITY_TIMEOUT = 30_000;
 export class Hypervisor {
   private workers = new Map<string, UserWorker>();
+  private realtimeFs = new Map<string, Realtime>();
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
   constructor() {
   }
 
   public fetch(req: Request): Promise<Response> {
+    console.log(req.headers);
+    console.log(req.headers.get("host"), req.headers.get("x-forwarded-for"));
+    // do some domain-based routing
     const url = new URL(req.url);
-
-    // Get the inline release from the query string
-    const volumeFromQs = url.searchParams.get(workerIdParam);
-    url.searchParams.delete(workerIdParam);
-    const ref = req.headers.get("referer");
-
-    const referer = ref && URL.canParse(ref) ? new URL(ref) : null;
-    const volumeFromRef = referer?.searchParams.get(workerIdParam);
-    const requesterVolume = volumeFromQs ?? volumeFromRef;
-
-    const cookable = requesterVolume?.startsWith(COOKIE_MARKER) ?? false;
-    const volumeQs = cookable
-      ? requesterVolume!.slice(1) // remove @
-      : requesterVolume;
-
-    // Get the cookies from the request headers
-    const cookies = getCookies(req.headers);
-
-    // Get the inline release from the cookie
-    const volumeFromCookie = cookies[DECO_VOLUME_COOKIE_NAME];
-
-    // Determine the inline release and whether a cookie should be added
-    const [isolateVolume, shouldAddCookie] = volumeQs != null
-      ? [
-        volumeQs,
-        (volumeQs !== volumeFromCookie) && cookable,
-      ]
-      : [volumeFromCookie, false];
-    if (typeof isolateVolume !== "string") {
+    const locator = Locator.fromHostname(url.hostname);
+    if (!locator) {
       return Promise.resolve(new Response(null, { status: 404 }));
     }
-    const isolateVolumeUrl = URL.canParse(isolateVolume)
-      ? isolateVolume
-      : `https://admin.deco.cx/live/invoke/deco-sites/admin/loaders/environments/watch.ts?site=${isolateVolume}&head=root&name=Staging`;
-    let worker = this.workers.get(isolateVolumeUrl);
+
+    const cwd = join(
+      Deno.cwd(),
+      USER_WORKERS_FOLDER,
+      Locator.stringify(locator),
+      "/",
+    );
+    if (url.pathname.startsWith("/volumes")) {
+      let realtime = this.realtimeFs.get(cwd);
+      if (!realtime) {
+        const state = new HypervisorRealtimeState({ dir: cwd });
+        realtime = new Realtime(state, {} as Env);
+        this.realtimeFs.set(cwd, realtime);
+      }
+      return realtime.fetch(req);
+    }
+    let worker = this.workers.get(cwd);
     if (!worker) {
       worker = new UserWorker({
-        id: isolateVolumeUrl,
+        locator,
         cpuLimit: 1,
         memoryLimit: "512Mi",
-        cwd: join(Deno.cwd(), USER_WORKERS_FOLDER, btoa(isolateVolumeUrl), "/"),
+        cwd,
         envVars: {},
       });
-      this.workers.set(isolateVolumeUrl, worker);
+      this.workers.set(cwd, worker);
     }
-    this.timers.has(isolateVolumeUrl) &&
-      clearTimeout(this.timers.get(isolateVolumeUrl)!);
+    this.timers.has(cwd) &&
+      clearTimeout(this.timers.get(cwd)!);
     this.timers.set(
-      isolateVolumeUrl,
+      cwd,
       setTimeout(async () => {
-        console.log("stopping worker", isolateVolumeUrl);
-        this.workers.delete(isolateVolumeUrl);
-        this.timers.delete(isolateVolumeUrl);
+        console.log("stopping worker", cwd);
+        this.workers.delete(cwd);
+        this.timers.delete(cwd);
         await worker.stop();
       }, NO_ACTIVITY_TIMEOUT),
     );
-    return worker.fetch(new Request(url, req)).then((response) => {
-      if (shouldAddCookie) {
-        setCookie(response.headers, {
-          name: DECO_VOLUME_COOKIE_NAME,
-          value: isolateVolumeUrl,
-          path: "/",
-          sameSite: "Strict",
-        });
-      }
-      return response;
-    }).catch((err) => {
+    return worker.fetch(new Request(url, req)).catch((err) => {
       console.error("error", err);
       return new Response(null, { status: 500 });
     });

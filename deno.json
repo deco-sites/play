@@ -44,7 +44,11 @@
     "std/": "https://deno.land/std@0.190.0/",
     "prefetch": "https://deno.land/x/prefetch@0.0.6/mod.ts",
     "apps/": "https://denopkg.com/deco-cx/apps@0.36.5/",
-    "daisyui": "npm:daisyui@4.6.0"
+    "daisyui": "npm:daisyui@4.6.0",
+    "fast-json-patch": "npm:fast-json-patch@3.1.1",
+    "@cloudflare/workers-types": "npm:@cloudflare/workers-types@4.20240208.0",
+    "file:///Users/marcoscandeia/workspace/realtime/src/ws.ts": "./ws.ts",
+    "file:///Users/marcoscandeia/workspace/realtime/src/fs.ts": "./fs.ts"
   },
   "exclude": ["node_modules", "static/", "README.md"],
   "nodeModulesDir": true
