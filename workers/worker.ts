@@ -1,11 +1,11 @@
 import { allowCorsFor } from "deco/mod.ts";
+import * as colors from "std/fmt/colors.ts";
 import { exists } from "std/fs/exists.ts";
-import { join } from "std/path/mod.ts";
 import { WorkerLocator } from "../locator.ts";
 import { DenoRun } from "./denoRun.ts";
 import { Isolate } from "./isolate.ts";
 import meta from "./meta.json" with { type: "json" };
-export const SERVER_SOCK = "server.sock";
+
 export interface WorkerOptions {
   envVars: { [key: string]: string };
   cwd: string;
@@ -44,8 +44,8 @@ export class UserWorker {
           ffi: "inherit",
           hrtime: "inherit",
           read: "inherit",
-          run: true,
-          write: [join(this.options.cwd, "fresh.gen.ts")],
+          run: false,
+          write: [this.options.cwd],
           sys: "inherit",
         },
       },
@@ -54,11 +54,14 @@ export class UserWorker {
     return isolate;
   }
   async stop(): Promise<void> {
-    await this.gracefulShutdown(await this.isolate);
+    await this.gracefulShutdown(this.isolate);
   }
 
   errAs500(err: unknown) {
-    console.error("isolate not available", err);
+    console.error(
+      colors.brightYellow(`[${this.options.cwd}]: not available`),
+      err,
+    );
     return new Response(null, { status: 500 });
   }
 
