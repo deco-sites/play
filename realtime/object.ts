@@ -1,10 +1,76 @@
-import { RealtimeState } from "../deps.ts";
-import { dirname, join } from "std/path/mod.ts";
+// deno-lint-ignore-file no-explicit-any require-await
 import { ensureDir } from "std/fs/ensure_dir.ts";
+import { dirname, join } from "std/path/mod.ts";
+import { RealtimeState } from "../deps.ts";
 
 type RealtimeStorage = RealtimeState["storage"];
+export class HypervisorMemStorage implements RealtimeStorage {
+  private data: Map<string, any>;
 
-export class HypervisorStorage implements RealtimeStorage {
+  constructor() {
+    this.data = new Map<string, any>();
+  }
+
+  async get<T = unknown>(key: string): Promise<T | undefined>;
+  async get<T = unknown>(keys: string[]): Promise<Map<string, T>>;
+  async get<T = unknown>(
+    keys: string | string[],
+  ): Promise<T | undefined | Map<string, T>> {
+    if (Array.isArray(keys)) {
+      const data = new Map<string, T>();
+      keys.forEach((k) => {
+        const value = this.data.get(k);
+        if (value !== undefined) {
+          data.set(k, value as T);
+        }
+      });
+      return data;
+    } else {
+      const value = this.data.get(keys);
+      return value !== undefined ? (value as T) : undefined;
+    }
+  }
+
+  async delete(key: string): Promise<boolean>;
+  async delete(keys: string[]): Promise<number>;
+  async delete(keys: string | string[]): Promise<boolean | number> {
+    if (Array.isArray(keys)) {
+      let deletedCount = 0;
+      keys.forEach((k) => {
+        if (this.data.delete(k)) {
+          deletedCount++;
+        }
+      });
+      return deletedCount;
+    } else {
+      return this.data.delete(keys) ? true : false;
+    }
+  }
+
+  async put<T>(key: string, value: T): Promise<void>;
+  async put<T>(entries: Record<string, T>): Promise<void>;
+  async put(
+    key: string | Record<string, unknown>,
+    value?: unknown,
+  ): Promise<void> {
+    if (typeof key === "string") {
+      this.data.set(key, value as string);
+    } else {
+      for (const [entryKey, entryValue] of Object.entries(key)) {
+        this.data.set(entryKey, entryValue as string);
+      }
+    }
+  }
+
+  async deleteAll(): Promise<void> {
+    this.data.clear();
+  }
+
+  async list<T = unknown>(): Promise<Map<string, T>> {
+    return new Map(this.data);
+  }
+}
+export class HypervisorDiskStorage implements RealtimeStorage {
   constructor(private dir: string) {}
 
   async get<T = unknown>(key: string): Promise<T | undefined>;
@@ -103,24 +169,21 @@ export class HypervisorStorage implements RealtimeStorage {
 }
 
 export interface HypervisorRealtimeStateOptions {
-  dir: string;
+  storage: RealtimeStorage;
 }
 export class HypervisorRealtimeState<T = unknown> implements RealtimeState {
-  private blockConcurrencyWhileResolvers: ReturnType<
-    typeof Promise.withResolvers<T>
-  >;
+  private blockConcurrencyWhilePromise: Promise<T> | undefined;
   public storage: RealtimeStorage;
   constructor(options: HypervisorRealtimeStateOptions) {
-    this.blockConcurrencyWhileResolvers = Promise.withResolvers<T>();
-    this.storage = new HypervisorStorage(options.dir);
+    this.storage = options.storage;
   }
 
   blockConcurrencyWhile(cb: () => Promise<T>): Promise<T> {
-    cb().then(this.blockConcurrencyWhileResolvers.resolve).catch(
-      this.blockConcurrencyWhileResolvers.reject,
-    );
-    return this.blockConcurrencyWhileResolvers.promise;
+    this.blockConcurrencyWhilePromise = cb();
+    return this.blockConcurrencyWhilePromise;
   }
 
-  async wait() {}
+  public async wait() {
+    return this?.blockConcurrencyWhilePromise ?? Promise.resolve();
+  }
 }

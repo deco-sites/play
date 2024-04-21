@@ -42,7 +42,6 @@ export class DenoRun implements Isolate {
     | undefined;
   constructor(protected options: IsolateOptions) {
     this.port = portPool.get();
-    this.start();
   }
   start(): void {
     if (this.isRunning()) {
@@ -66,7 +65,7 @@ export class DenoRun implements Isolate {
       inflightZero.resolve();
     }
     await Promise.race([inflightZero.promise, delay(10_000)]); // timeout of 10s
-    this.child && this.child.kill("SIGKILL");
+    this.child?.kill("SIGKILL");
     portPool.free(this.port);
     this.disposed?.resolve();
   }
@@ -93,12 +92,13 @@ export class DenoRun implements Isolate {
     }
   }
   isRunning(): boolean {
-    return !this.ctrl?.signal.aborted;
+    return this.ctrl?.signal.aborted === false;
   }
   async waitUntilReady(timeoutMs?: number): Promise<void> {
     await waitForPort(this.port, {
       timeout: timeoutMs ?? 30_000,
       listening: true,
+      signal: this.ctrl?.signal,
     });
   }
   private spawn(): [Deno.ChildProcess, Promise<void>] {
@@ -109,7 +109,7 @@ export class DenoRun implements Isolate {
         "--node-modules-dir=false",
         "--unstable-hmr", // remove this and let restart isolate work.
         ...buildPermissionsArgs(this.options.permissions),
-        "dev.ts",
+        "main.ts",
       ],
       cwd: this.options.cwd,
       stdout: "inherit",

@@ -3,4 +3,8 @@ import "deco/plugins/deco.ts";
 
 const hypervisor = new Hypervisor();
 
-Deno.serve(hypervisor.fetch.bind(hypervisor));
+const appPort = Deno.env.get("APP_PORT");
+Deno.serve(
+  { port: appPort ? +appPort : 8000 },
+  hypervisor.fetch.bind(hypervisor),
+);

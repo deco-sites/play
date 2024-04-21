@@ -5,8 +5,7 @@ export interface WorkerLocator {
 export const Locator = {
   stringify: (locator: WorkerLocator) =>
     `${locator.environment}--${locator.site}`,
-  fromHostname(hostname: string): WorkerLocator | null {
-    const [siteEnv] = hostname.split(".");
+  fromStringified: (siteEnv: string): WorkerLocator | null => {
     const [environment, site] = siteEnv.split("--");
     if (!site || !environment) {
       return null;
@@ -15,5 +14,9 @@ export const Locator = {
       site,
       environment,
     };
+  },
+  fromHostname(hostname: string): WorkerLocator | null {
+    const [siteEnv] = hostname.split(".");
+    return Locator.fromStringified(siteEnv);
   },
 };

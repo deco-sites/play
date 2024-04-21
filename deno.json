@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "start": "deno run -A --no-prompt --unstable-worker-options main.ts",
+    "start": "deno run -A --env --no-prompt --unstable-worker-options main.ts",
     "check": "deno fmt && deno lint && deno check main.ts",
     "release": "deno eval 'import \"deco/scripts/release.ts\"'",
     "update": "deno eval 'import \"deco/scripts/update.ts\"'",

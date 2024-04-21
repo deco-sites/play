@@ -11,7 +11,7 @@ export const isListening = async (port: number): Promise<boolean> => {
 
 export async function waitForPort(
   port: number,
-  options: { listening?: boolean; timeout?: number } = {},
+  options: { listening?: boolean; timeout?: number; signal?: AbortSignal } = {},
 ): Promise<void> {
   const { listening = true, timeout = 10000 } = options;
   const startTime = Date.now();
@@ -20,7 +20,7 @@ export async function waitForPort(
       return;
     }
     // Check if timeout is reached
-    if (Date.now() - startTime >= timeout) {
+    if (Date.now() - startTime >= timeout || options?.signal?.aborted) {
       throw new Error(
         `Timeout waiting for port ${port} to ${
           listening ? "be ready" : "be unavailable"

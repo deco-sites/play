@@ -1,7 +1,10 @@
+import { allowCorsFor } from "deco/mod.ts";
+import { exists } from "std/fs/exists.ts";
+import { join } from "std/path/mod.ts";
 import { WorkerLocator } from "../locator.ts";
 import { DenoRun } from "./denoRun.ts";
 import { Isolate } from "./isolate.ts";
-
+import meta from "./meta.json" with { type: "json" };
 export const SERVER_SOCK = "server.sock";
 export interface WorkerOptions {
   envVars: { [key: string]: string };
@@ -16,7 +19,7 @@ const DENO_DIR_ENV_VAR = "DENO_DIR";
 const denoDir = Deno.env.get(DENO_DIR_ENV_VAR);
 
 export class UserWorker {
-  protected isolate: Promise<Isolate>;
+  protected isolate: Isolate;
 
   constructor(protected options: WorkerOptions) {
     this.isolate = this.start();
@@ -25,7 +28,7 @@ export class UserWorker {
   async gracefulShutdown(isolate?: Isolate): Promise<void> {
     await isolate?.[Symbol.asyncDispose]();
   }
-  async start(): Promise<Isolate> {
+  start(): Isolate {
     const isolate = new DenoRun(
       {
         cwd: this.options.cwd,
@@ -41,31 +44,43 @@ export class UserWorker {
           ffi: "inherit",
           hrtime: "inherit",
           read: "inherit",
-          run: false,
-          write: false,
+          run: true,
+          write: [join(this.options.cwd, "fresh.gen.ts")],
           sys: "inherit",
         },
       },
     );
 
-    await isolate.waitUntilReady();
     return isolate;
   }
   async stop(): Promise<void> {
     await this.gracefulShutdown(await this.isolate);
   }
 
+  errAs500(err: unknown) {
+    console.error("isolate not available", err);
+    return new Response(null, { status: 500 });
+  }
+
   async fetch(req: Request): Promise<Response> {
-    const isolate = await this.isolate.then(async (isolate) => {
-      if (!isolate.isRunning()) {
-        isolate.start();
-        await isolate.waitUntilReady();
+    if (!this.isolate.isRunning() && !await exists(this.options.cwd)) {
+      if (req.url.includes("/live/_meta")) {
+        return new Response(
+          JSON.stringify({ ...meta, site: this.options.locator.site }),
+          { status: 200, headers: allowCorsFor(req) },
+        );
       }
-      return isolate;
-    });
-    return isolate.fetch(req).catch((err) => {
-      console.error("isolate not available", err);
-      return new Response(null, { status: 500 });
+    }
+    if (!this.isolate.isRunning()) {
+      this.isolate.start();
+      await this.isolate.waitUntilReady();
+    }
+    return this.isolate.fetch(req).catch(async (err) => {
+      if (this.isolate.isRunning()) {
+        await this.isolate.waitUntilReady();
+        return this.isolate.fetch(req).catch(this.errAs500);
+      }
+      return this.errAs500(err);
     });
   }
 }
