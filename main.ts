@@ -1,5 +1,10 @@
-import { start } from "$fresh/server.ts";
-import config from "./fresh.config.ts";
-import manifest from "./fresh.gen.ts";
+import { Hypervisor } from "./hypervisor.ts";
+import "deco/plugins/deco.ts";
 
-await start(manifest, config);
+const hypervisor = new Hypervisor();
+
+const appPort = Deno.env.get("APP_PORT");
+Deno.serve(
+  { port: appPort ? +appPort : 8000 },
+  hypervisor.fetch.bind(hypervisor),
+);

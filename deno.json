@@ -1,11 +1,7 @@
 {
   "tasks": {
-    "start": "deno task bundle && deno run -A --unstable --watch=static/sw.js,tailwind.css,sections/,functions/,loaders/,actions/,workflows/,accounts/ dev.ts",
-    "component": "deno eval 'import \"deco/scripts/component.ts\"'",
-    "check": "deno fmt && deno lint && deno check dev.ts main.ts",
-    "build": "deno run -A dev.ts build",
-    "preview": "deno run -A main.ts",
-    "gen": "deno run -A dev.ts --gen-only",
+    "start": "deno run -A --env --no-prompt --unstable-worker-options main.ts",
+    "check": "deno fmt && deno lint && deno check main.ts",
     "release": "deno eval 'import \"deco/scripts/release.ts\"'",
     "update": "deno eval 'import \"deco/scripts/update.ts\"'",
     "install": "deno eval 'import \"deco/scripts/apps/install.ts\"'",
@@ -17,24 +13,15 @@
   },
   "lint": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     },
     "rules": {
-      "tags": [
-        "fresh",
-        "recommended"
-      ]
+      "tags": ["fresh", "recommended"]
     }
   },
   "fmt": {
     "files": {
-      "exclude": [
-        "static/",
-        "README.md"
-      ]
+      "exclude": ["static/", "README.md"]
     }
   },
   "compilerOptions": {
@@ -43,27 +30,19 @@
     "experimentalDecorators": true
   },
   "imports": {
-    "deco-sites/play/": "./",
     "deco/": "https://denopkg.com/deco-cx/deco@1.61.2/",
-    "deco-sites/std/": "https://denopkg.com/deco-sites/std@f1743470773bc18db8353861be457b70b005a02f/",
-    "partytown/": "https://deno.land/x/partytown@0.4.8/",
     "$fresh/": "https://deno.land/x/fresh@1.6.8/",
     "preact": "https://esm.sh/preact@10.19.2",
     "preact/": "https://esm.sh/preact@10.19.2/",
     "preact-render-to-string": "https://esm.sh/*preact-render-to-string@6.4.0",
     "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
     "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
-    "twind": "https://esm.sh/twind@0.16.19",
-    "twind/": "https://esm.sh/twind@0.16.19/",
     "std/": "https://deno.land/std@0.190.0/",
-    "prefetch": "https://deno.land/x/prefetch@0.0.6/mod.ts",
-    "apps/": "https://denopkg.com/deco-cx/apps@0.36.5/",
-    "daisyui": "npm:daisyui@4.6.0"
+    "fast-json-patch": "npm:fast-json-patch@3.1.1",
+    "@cloudflare/workers-types": "npm:@cloudflare/workers-types@4.20240208.0",
+    "https://denopkg.com/deco-cx/realtime@b299319cd6b13b4077046841331f35609dc3ebd5/src/ws.ts": "./ws.ts",
+    "https://denopkg.com/deco-cx/realtime@b299319cd6b13b4077046841331f35609dc3ebd5/src/fs.ts": "./fs.ts"
   },
-  "exclude": [
-    "node_modules",
-    "static/",
-    "README.md"
-  ],
+  "exclude": ["node_modules", "static/", "README.md"],
   "nodeModulesDir": true
 }

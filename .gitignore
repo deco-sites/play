@@ -76,3 +76,5 @@ deno.lock
 .config.json
 # Fresh build directory
 _fresh/
+
+.workers
