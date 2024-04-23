@@ -9,12 +9,11 @@ import {
 import { UserWorker } from "./workers/worker.ts";
 
 const HYPERVISOR_API_SPECIFIER = "x-hypervisor-api";
-const USER_WORKERS_FOLDER = Deno.env.get("USER_WORKERS_FOLDER") ?? ".workers";
-const NO_ACTIVITY_TIMEOUT = 30_000;
-const BASE_FOLDER = join(
+const USER_WORKERS_FOLDER = Deno.env.get("USER_WORKERS_FOLDER") ?? join(
   Deno.cwd(),
-  USER_WORKERS_FOLDER,
+  ".workers",
 );
+const NO_ACTIVITY_TIMEOUT = 30_000;
 
 const defaultSiteName = Deno.env.get("DECO_SITE_NAME");
 const defaultEnv = Deno.env.get("DECO_ENVIRONMENT_NAME");
@@ -50,7 +49,7 @@ export class Hypervisor {
         const storage = ephemeral
           ? new HypervisorMemStorage()
           : new HypervisorDiskStorage(join(
-            BASE_FOLDER,
+            USER_WORKERS_FOLDER,
             volume,
             "/",
           ));
@@ -73,7 +72,7 @@ export class Hypervisor {
       return Promise.resolve(new Response(null, { status: 404 }));
     }
     const cwd = join(
-      BASE_FOLDER,
+      USER_WORKERS_FOLDER,
       Locator.stringify(locator),
       "/",
     );
