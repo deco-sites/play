@@ -16,7 +16,7 @@ Deno.serve(
     } finally {
       response?.then((resp) => {
         console.log(
-          colors.bgBlue(`[x]`),
+          colors.gray(`~`),
           formatLog({ begin, status: resp.status, url: new URL(req.url) }),
         );
       });
