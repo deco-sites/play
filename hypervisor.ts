@@ -67,7 +67,7 @@ export class Hypervisor {
       );
     }
 
-    const locator = Locator.fromHostname(url.hostname) ?? DEFAULT_LOCATOR;
+    const locator = Locator.fromReq(req) ?? DEFAULT_LOCATOR;
     if (!locator) {
       return Promise.resolve(new Response(null, { status: 404 }));
     }
