@@ -1,7 +1,7 @@
 import EventEmitter from "node:events";
 import { delay } from "std/async/delay.ts";
 import { Isolate, IsolateOptions } from "./isolate.ts";
-import PortPool from "./portpool.ts";
+import { portPool } from "./portpool.ts";
 import { waitForPort } from "./utils.ts";
 
 const permCache: Record<string, Deno.PermissionState> = {};
@@ -29,7 +29,16 @@ const buildPermissionsArgs = (
 
   return args;
 };
-const portPool = new PortPool();
+export interface CommandIsolate {
+  command: Deno.Command;
+  port: number;
+}
+
+const isCmdIsolate = (
+  cmd: IsolateOptions | CommandIsolate,
+): cmd is CommandIsolate => {
+  return (cmd as CommandIsolate).command !== undefined;
+};
 export class DenoRun implements Isolate {
   private ctrl: AbortController | undefined;
   protected child: Deno.ChildProcess | undefined;
@@ -37,11 +46,31 @@ export class DenoRun implements Isolate {
   protected inflightRequests = 0;
   protected inflightZeroEmitter = new EventEmitter();
   protected port: number;
+  protected command: Deno.Command;
   protected disposed:
     | ReturnType<typeof Promise.withResolvers<void>>
     | undefined;
-  constructor(protected options: IsolateOptions) {
-    this.port = portPool.get();
+  constructor(options: IsolateOptions | CommandIsolate) {
+    if (isCmdIsolate(options)) {
+      this.port = options.port;
+      this.command = options.command;
+    } else {
+      this.port = portPool.get();
+      this.command = new Deno.Command(Deno.execPath(), {
+        args: [
+          "run",
+          "--no-prompt",
+          "--node-modules-dir=false",
+          "--unstable-hmr", // remove this and let restart isolate work.
+          ...buildPermissionsArgs(options.permissions),
+          "main.ts",
+        ],
+        cwd: options.cwd,
+        stdout: "inherit",
+        stderr: "inherit",
+        env: { ...options.envVars, PORT: `${this.port}` },
+      });
+    }
   }
   start(): void {
     if (this.isRunning()) {
@@ -65,7 +94,11 @@ export class DenoRun implements Isolate {
       inflightZero.resolve();
     }
     await Promise.race([inflightZero.promise, delay(10_000)]); // timeout of 10s
-    this.child?.kill("SIGKILL");
+    try {
+      this.child?.kill("SIGKILL");
+    } catch (err) {
+      console.log("error killing child", err);
+    }
     portPool.free(this.port);
     this.disposed?.resolve();
   }
@@ -75,7 +108,10 @@ export class DenoRun implements Isolate {
     url.port = `${this.port}`;
     url.hostname = "0.0.0.0";
 
-    const nReq = new Request(url.toString(), req);
+    if (req.headers.get("upgrade") === "websocket") {
+      return proxyWebSocket(url, req);
+    }
+    const nReq = new Request(url.toString(), req.clone());
     return fetch(nReq).finally(() => {
       this.inflightRequests--;
       if (this.inflightRequests === 0) {
@@ -102,21 +138,7 @@ export class DenoRun implements Isolate {
     });
   }
   private spawn(): [Deno.ChildProcess, Promise<void>] {
-    const command = new Deno.Command(Deno.execPath(), {
-      args: [
-        "run",
-        "--no-prompt",
-        "--node-modules-dir=false",
-        "--unstable-hmr", // remove this and let restart isolate work.
-        ...buildPermissionsArgs(this.options.permissions),
-        "main.ts",
-      ],
-      cwd: this.options.cwd,
-      stdout: "inherit",
-      stderr: "inherit",
-      env: { ...this.options.envVars, PORT: `${this.port}` },
-    });
-    const child = command.spawn();
+    const child = this.command.spawn();
     child.status.then((status) => {
       if (status.code !== 0) {
         console.error("child process failed", status);
@@ -125,4 +147,70 @@ export class DenoRun implements Isolate {
     });
     return [child, Promise.resolve()];
   }
+}
+
+function proxyWebSocket(url: URL, nReq: Request) {
+  const proxySocket = new WebSocket(url);
+  const { response, socket } = Deno.upgradeWebSocket(nReq);
+
+  let proxySocketReady = false;
+  let targetSocketReady = false;
+  const proxyMessageQueue: string[] = [];
+  const targetMessageQueue: string[] = [];
+
+  proxySocket.onopen = () => {
+    proxySocketReady = true;
+    if (targetSocketReady) {
+      flushProxyMessageQueue();
+    }
+  };
+
+  socket.onopen = () => {
+    targetSocketReady = true;
+    if (proxySocketReady) {
+      flushTargetMessageQueue();
+    }
+  };
+
+  proxySocket.onmessage = (msg) => {
+    if (targetSocketReady) {
+      socket.send(msg.data);
+    } else {
+      proxyMessageQueue.push(msg.data);
+    }
+  };
+
+  socket.onmessage = (msg) => {
+    if (proxySocketReady) {
+      proxySocket.send(msg.data);
+    } else {
+      targetMessageQueue.push(msg.data);
+    }
+  };
+
+  socket.onclose = () => {
+    proxySocket.close();
+  };
+
+  proxySocket.onclose = () => {
+    socket.close();
+  };
+
+  function flushProxyMessageQueue() {
+    // Send queued messages received from proxy socket
+    while (proxyMessageQueue.length > 0) {
+      const msg = proxyMessageQueue.shift();
+      msg && socket.send(msg);
+    }
+  }
+
+  function flushTargetMessageQueue() {
+    // Send queued messages received from target socket
+    while (targetMessageQueue.length > 0) {
+      const msg = targetMessageQueue.shift();
+      msg && proxySocket.send(msg);
+    }
+  }
+
+  return Promise.resolve(response);
 }

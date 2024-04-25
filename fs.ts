@@ -4,16 +4,11 @@ export const createDurableFS = (state: RealtimeState) => {
   const storage = state.storage;
   return {
     readFile: async (filepath: string): Promise<string> => {
-      try {
-        const fileContent = await storage.get(filepath);
-        if (!fileContent) {
-          throw new FSError("ENOENT");
-        }
-        return fileContent as string;
-      } catch (error) {
-        console.error("Error reading file:", error);
-        throw error;
+      const fileContent = await storage.get(filepath);
+      if (!fileContent) {
+        throw new FSError("ENOENT");
       }
+      return fileContent as string;
     },
     writeFile: async (filepath: string, content: string) => {
       try {

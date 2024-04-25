@@ -1,107 +1,66 @@
-import { join } from "std/path/mod.ts";
+import * as colors from "std/fmt/colors.ts";
 import { Env, Realtime } from "./deps.ts";
-import { Locator, WorkerLocator } from "./locator.ts";
 import {
   HypervisorDiskStorage,
-  HypervisorMemStorage,
   HypervisorRealtimeState,
 } from "./realtime/object.ts";
-import { UserWorker } from "./workers/worker.ts";
+import { DenoRun } from "./workers/denoRun.ts";
+import { Isolate } from "./workers/isolate.ts";
 
 const HYPERVISOR_API_SPECIFIER = "x-hypervisor-api";
-const USER_WORKERS_FOLDER = Deno.env.get("USER_WORKERS_FOLDER") ?? join(
-  Deno.cwd(),
-  ".workers",
-);
-const NO_ACTIVITY_TIMEOUT = 30_000;
 
-const defaultSiteName = Deno.env.get("DECO_SITE_NAME");
-const defaultEnv = Deno.env.get("DECO_ENVIRONMENT_NAME");
-const DEFAULT_LOCATOR: WorkerLocator | undefined = defaultSiteName
-  ? {
-    site: defaultSiteName,
-    environment: defaultEnv ?? "staging",
-  }
-  : undefined;
 export class Hypervisor {
-  private workers = new Map<string, UserWorker>();
-  private realtimeFs = new Map<
-    string,
-    { realtime: Realtime; state: HypervisorRealtimeState }
-  >();
-  private timers = new Map<string, ReturnType<typeof setTimeout>>();
-  constructor() {
+  private realtimeFsState: HypervisorRealtimeState;
+  private realtimeFs: Realtime;
+  private isolate: Isolate;
+  constructor(protected cmd: Deno.Command, protected port: number) {
+    const storage = new HypervisorDiskStorage(Deno.cwd());
+    // TODO (@mcandeia) Deal with ephemeral volumes like presence
+    this.realtimeFsState = new HypervisorRealtimeState({
+      storage,
+    });
+    this.realtimeFs = new Realtime(this.realtimeFsState, {} as Env);
+    this.isolate = new DenoRun({
+      command: cmd,
+      port,
+    });
   }
 
-  public fetch(req: Request): Promise<Response> {
+  errAs500(err: unknown) {
+    console.error(
+      colors.brightYellow(`isolate not available`),
+      err,
+    );
+    return new Response(null, { status: 500 });
+  }
+
+  public async fetch(req: Request): Promise<Response> {
     const url = new URL(req.url);
     const isHypervisorApi = (req.headers.get(HYPERVISOR_API_SPECIFIER) ??
       url.searchParams.get(HYPERVISOR_API_SPECIFIER)) === "true";
     if (isHypervisorApi && url.pathname.startsWith("/volumes")) {
-      const [_, __, volumeHash] = url.pathname.split("/");
-      const [ephemeralSEP, ...rest] = volumeHash.split(":");
-      const [ephemeral, volume] = ephemeralSEP === "ephemeral"
-        ? [true, rest.join(":")]
-        : [false, volumeHash];
-      const volumeId = `${volume}@${ephemeral}`;
-      let worker = this.realtimeFs.get(volumeId);
-      if (!worker) {
-        const storage = ephemeral
-          ? new HypervisorMemStorage()
-          : new HypervisorDiskStorage(join(
-            USER_WORKERS_FOLDER,
-            volume,
-            "/",
-          ));
-        const state = new HypervisorRealtimeState({
-          storage,
-        });
-        worker = { realtime: new Realtime(state, {} as Env), state };
-        this.realtimeFs.set(volumeId, worker);
+      return this.realtimeFsState.wait().then(() => this.realtimeFs.fetch(req))
+        .catch(
+          (err) => {
+            console.error("error when fetching realtimeFs", url.pathname, err);
+            return new Response(null, { status: 500 });
+          },
+        );
+    }
+
+    if (!this.isolate.isRunning()) {
+      this.isolate.start();
+      await this.isolate.waitUntilReady();
+    }
+    return this.isolate.fetch(req).catch(async (err) => {
+      if (this.isolate.isRunning()) {
+        await this.isolate.waitUntilReady().catch((_err) => {});
+        return this.isolate.fetch(req).catch(this.errAs500);
       }
-      return worker.state.wait().then(() => worker.realtime.fetch(req)).catch(
-        (err) => {
-          console.error("error", url.pathname, err);
-          return new Response(null, { status: 500 });
-        },
-      );
-    }
-
-    const locator = Locator.fromReq(req) ?? DEFAULT_LOCATOR;
-    if (!locator) {
-      return Promise.resolve(new Response(null, { status: 404 }));
-    }
-    const cwd = join(
-      USER_WORKERS_FOLDER,
-      Locator.stringify(locator),
-      "/",
-    );
-
-    let worker = this.workers.get(cwd);
-    if (!worker) {
-      worker = new UserWorker({
-        locator,
-        cpuLimit: 1,
-        memoryLimit: "512Mi",
-        cwd,
-        envVars: {},
-      });
-      this.workers.set(cwd, worker);
-    }
-    this.timers.has(cwd) &&
-      clearTimeout(this.timers.get(cwd)!);
-    this.timers.set(
-      cwd,
-      setTimeout(async () => {
-        console.log("stopping worker", cwd);
-        this.workers.delete(cwd);
-        this.timers.delete(cwd);
-        await worker.stop();
-      }, NO_ACTIVITY_TIMEOUT),
-    );
-    return worker.fetch(new Request(url, req)).catch((err) => {
-      console.error("error", url.pathname, err);
-      return new Response(null, { status: 500 });
+      return this.errAs500(err);
     });
+  }
+  public async shutdown() {
+    await this.isolate?.[Symbol.asyncDispose]();
   }
 }

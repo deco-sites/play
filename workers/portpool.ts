@@ -1,8 +1,8 @@
 import {
-    checkedPort,
-    makeRange,
-    max,
-    min,
+  checkedPort,
+  makeRange,
+  max,
+  min,
 } from "https://deno.land/x/getport@v2.1.2/mod.ts";
 
 class PortPool implements PortPool {
@@ -62,3 +62,5 @@ class PortPool implements PortPool {
 }
 
 export default PortPool;
+
+export const portPool = new PortPool();

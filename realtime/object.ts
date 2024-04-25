@@ -1,8 +1,10 @@
 // deno-lint-ignore-file no-explicit-any require-await
 import { ensureDir } from "std/fs/ensure_dir.ts";
-import { dirname, join } from "std/path/mod.ts";
+import { dirname, globToRegExp, join } from "std/path/mod.ts";
 import { RealtimeState } from "../deps.ts";
+import { walk } from "std/fs/walk.ts";
 
+const IGNORE_FILES_GLOB = ["/.git/**"];
 type RealtimeStorage = RealtimeState["storage"];
 export class HypervisorMemStorage implements RealtimeStorage {
   private data: Map<string, any>;
@@ -71,7 +73,25 @@ export class HypervisorMemStorage implements RealtimeStorage {
   }
 }
 export class HypervisorDiskStorage implements RealtimeStorage {
-  constructor(private dir: string) {}
+  private ignore: { includes: (str: string) => boolean } = {
+    includes: () => true,
+  };
+  constructor(private dir: string) {
+    let ignoreContent = null;
+    try {
+      ignoreContent = Deno.readTextFileSync(
+        join(dir, ".gitignore"),
+      );
+    } catch (_err) {}
+    const globs = [...ignoreContent?.split("\n") ?? [], ...IGNORE_FILES_GLOB];
+    const globsExp = globs
+      ? globs.map((glob) => globToRegExp(`/${glob}`))
+      : undefined;
+    this.ignore = {
+      includes: (str) =>
+        globsExp && globsExp.some((globExp) => globExp.test(str)) || false,
+    };
+  }
 
   async get<T = unknown>(key: string): Promise<T | undefined>;
   async get<T = unknown>(keys: string[]): Promise<Map<string, T>>;
@@ -137,7 +157,10 @@ export class HypervisorDiskStorage implements RealtimeStorage {
     const dirEntries = Deno.readDir(this.dir);
     try {
       for await (const dirEntry of dirEntries) {
-        await Deno.remove(join(this.dir, dirEntry.name), { recursive: true });
+        await Deno.remove(join(this.dir, dirEntry.name), { recursive: true })
+          .catch((err) => {
+            console.log("ignoring", err);
+          });
       }
     } catch (err) {
       if (err instanceof Deno.errors.NotFound) {
@@ -149,15 +172,18 @@ export class HypervisorDiskStorage implements RealtimeStorage {
 
   async list<T = unknown>(): Promise<Map<string, T>> {
     const data = new Map<string, T>();
-    const dirEntries = Deno.readDir(this.dir);
     try {
-      for await (const dirEntry of dirEntries) {
-        if (dirEntry.isDirectory) continue;
+      for await (const walkEntry of walk(this.dir)) {
+        if (walkEntry.isDirectory) continue;
+        if (this.ignore.includes(walkEntry.path.replace(this.dir, ""))) {
+          continue;
+        }
         const fileContent = await Deno.readTextFile(
-          join(this.dir, dirEntry.name),
+          walkEntry.path,
         );
-        data.set(dirEntry.name, fileContent as T);
+        data.set(walkEntry.path.replace(this.dir, ""), fileContent as T);
       }
+
       return data;
     } catch (err) {
       if (err instanceof Deno.errors.NotFound) {
