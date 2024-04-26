@@ -88,31 +88,9 @@ Deno.serve(
 );
 
 const signals: Partial<Record<Deno.Signal, boolean>> = {
-  SIGABRT: false,
-  SIGALRM: false,
-  SIGBUS: false,
-  SIGCHLD: false,
-  SIGCONT: false,
-  SIGHUP: false,
-  SIGINFO: false,
   SIGINT: true, //
-  SIGIO: false,
-  SIGPIPE: false,
-  SIGPROF: false,
-  SIGQUIT: false,
-  SIGSYS: false,
   SIGTERM: true, //
-  SIGTRAP: false,
-  SIGTSTP: false,
   SIGTTIN: true, //
-  SIGTTOU: false,
-  SIGURG: false,
-  SIGUSR1: false,
-  SIGUSR2: false,
-  SIGVTALRM: false,
-  SIGWINCH: false,
-  SIGXCPU: false,
-  SIGXFSZ: false,
 };
 
 for (const [_signal, shouldExit] of Object.entries(signals)) {
