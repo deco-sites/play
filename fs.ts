@@ -6,7 +6,7 @@ export const createDurableFS = (state: RealtimeState) => {
     readFile: async (filepath: string): Promise<string> => {
       const fileContent = await storage.get(filepath);
       if (!fileContent) {
-        throw new FSError("ENOENT");
+        throw new FSError(`ENOENT`, `No such file or directory: ${filepath}`);
       }
       return fileContent as string;
     },

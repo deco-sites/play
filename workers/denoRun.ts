@@ -72,6 +72,13 @@ export class DenoRun implements Isolate {
       });
     }
   }
+  signal(sig: Deno.Signal) {
+    try {
+      this.child?.kill(sig);
+    } catch (_er) {
+      // ignored
+    }
+  }
   start(): void {
     if (this.isRunning()) {
       return;
@@ -96,8 +103,8 @@ export class DenoRun implements Isolate {
     await Promise.race([inflightZero.promise, delay(10_000)]); // timeout of 10s
     try {
       this.child?.kill("SIGKILL");
-    } catch (err) {
-      console.log("error killing child", err);
+    } catch (_err) {
+      // ignored
     }
     portPool.free(this.port);
     this.disposed?.resolve();
@@ -189,10 +196,12 @@ function proxyWebSocket(url: URL, nReq: Request) {
   };
 
   socket.onclose = () => {
+    targetSocketReady = false;
     proxySocket.close();
   };
 
   proxySocket.onclose = () => {
+    proxySocketReady = false;
     socket.close();
   };
 

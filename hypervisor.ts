@@ -9,20 +9,43 @@ import { Isolate } from "./workers/isolate.ts";
 
 const HYPERVISOR_API_SPECIFIER = "x-hypervisor-api";
 
+export interface AppOptions {
+  run: Deno.Command;
+  build?: Deno.Command;
+  port: number;
+}
 export class Hypervisor {
   private realtimeFsState: HypervisorRealtimeState;
   private realtimeFs: Realtime;
   private isolate: Isolate;
-  constructor(protected cmd: Deno.Command, protected port: number) {
-    const storage = new HypervisorDiskStorage(Deno.cwd());
+  constructor(protected options: AppOptions) {
+    let lastBuildCmd = Promise.resolve();
+    const buildCmd = options.build;
+    const storage = new HypervisorDiskStorage({
+      dir: Deno.cwd(),
+      onChange: buildCmd
+        ? (events) => {
+          const hasAnyCreationOrDeletion = events.some((evt) =>
+            evt.type !== "modify" && evt.path.endsWith(".ts") ||
+            evt.path.endsWith(".tsx")
+          );
+          if (hasAnyCreationOrDeletion) {
+            lastBuildCmd = lastBuildCmd.catch((_err) => {}).then(() => {
+              const child = buildCmd.spawn();
+              return child.output().then(() => {});
+            });
+          }
+        }
+        : undefined,
+    });
     // TODO (@mcandeia) Deal with ephemeral volumes like presence
     this.realtimeFsState = new HypervisorRealtimeState({
       storage,
     });
     this.realtimeFs = new Realtime(this.realtimeFsState, {} as Env);
     this.isolate = new DenoRun({
-      command: cmd,
-      port,
+      command: options.run,
+      port: options.port,
     });
   }
 
@@ -59,6 +82,9 @@ export class Hypervisor {
       }
       return this.errAs500(err);
     });
+  }
+  public proxySignal(signal: Deno.Signal) {
+    this.isolate?.signal(signal);
   }
   public async shutdown() {
     await this.isolate?.[Symbol.asyncDispose]();

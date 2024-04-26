@@ -1,10 +1,11 @@
 // deno-lint-ignore-file no-explicit-any require-await
 import { ensureDir } from "std/fs/ensure_dir.ts";
-import { dirname, globToRegExp, join } from "std/path/mod.ts";
-import { RealtimeState } from "../deps.ts";
+import { exists } from "std/fs/exists.ts";
 import { walk } from "std/fs/walk.ts";
+import { dirname, join } from "std/path/mod.ts";
+import { gitIgnore, RealtimeState } from "../deps.ts";
 
-const IGNORE_FILES_GLOB = ["/.git/**"];
+const IGNORE_FILES_GLOB = [".git/**"];
 type RealtimeStorage = RealtimeState["storage"];
 export class HypervisorMemStorage implements RealtimeStorage {
   private data: Map<string, any>;
@@ -72,24 +73,35 @@ export class HypervisorMemStorage implements RealtimeStorage {
     return new Map(this.data);
   }
 }
+
+export interface FsEvent {
+  type: "create" | "delete" | "modify";
+  path: string;
+}
+export interface DiskStorageOptions {
+  dir: string;
+  onChange?: (events: FsEvent[]) => void;
+}
 export class HypervisorDiskStorage implements RealtimeStorage {
   private ignore: { includes: (str: string) => boolean } = {
     includes: () => true,
   };
-  constructor(private dir: string) {
+  private dir: string;
+  constructor(private opts: DiskStorageOptions) {
+    this.dir = opts.dir;
     let ignoreContent = null;
     try {
       ignoreContent = Deno.readTextFileSync(
-        join(dir, ".gitignore"),
+        join(this.dir, ".gitignore"),
       );
-    } catch (_err) {}
+    } catch (_err) {
+      // ignore in case of does not exists
+    }
     const globs = [...ignoreContent?.split("\n") ?? [], ...IGNORE_FILES_GLOB];
-    const globsExp = globs
-      ? globs.map((glob) => globToRegExp(`/${glob}`))
-      : undefined;
+    const ignore = gitIgnore.default();
+    globs && ignore.add(globs);
     this.ignore = {
-      includes: (str) =>
-        globsExp && globsExp.some((globExp) => globExp.test(str)) || false,
+      includes: (str) => ignore.ignores(str.slice(1)),
     };
   }
 
@@ -124,13 +136,16 @@ export class HypervisorDiskStorage implements RealtimeStorage {
   async delete(keys: string | string[]): Promise<boolean | number> {
     const filePaths = Array.isArray(keys)
       ? keys.map((k) => join(this.dir, k))
-      : join(this.dir, keys);
+      : [join(this.dir, keys)];
     try {
       let deletedCount = 0;
       for (const filePath of filePaths) {
         await Deno.remove(filePath);
         deletedCount++;
       }
+      this.opts?.onChange?.(
+        filePaths.map((path) => ({ type: "delete", path })),
+      );
       return Array.isArray(keys) ? deletedCount : true;
     } catch (_error) {
       console.error("error deleting keys", _error);
@@ -146,11 +161,18 @@ export class HypervisorDiskStorage implements RealtimeStorage {
     value?: unknown,
   ): Promise<void> {
     const entries = typeof key === "string" ? { [key]: value } : key;
+    const events: FsEvent[] = [];
     for (const [entryKey, entryValue] of Object.entries(entries)) {
       const filePath = join(this.dir, entryKey);
-      await ensureDir(dirname(filePath));
+      const fileExists = await exists(filePath, { isFile: true });
+      events.push({
+        type: fileExists ? "modify" : "create",
+        path: filePath,
+      });
+      !fileExists && await ensureDir(dirname(filePath));
       await Deno.writeTextFile(filePath, entryValue as string);
     }
+    this.opts?.onChange?.(events);
   }
 
   async deleteAll(): Promise<void> {
@@ -175,13 +197,14 @@ export class HypervisorDiskStorage implements RealtimeStorage {
     try {
       for await (const walkEntry of walk(this.dir)) {
         if (walkEntry.isDirectory) continue;
-        if (this.ignore.includes(walkEntry.path.replace(this.dir, ""))) {
+        const virtualPath = walkEntry.path.replace(this.dir, "");
+        if (this.ignore.includes(virtualPath)) {
           continue;
         }
         const fileContent = await Deno.readTextFile(
           walkEntry.path,
         );
-        data.set(walkEntry.path.replace(this.dir, ""), fileContent as T);
+        data.set(virtualPath, fileContent as T);
       }
 
       return data;
