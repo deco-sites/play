@@ -90,7 +90,6 @@ Deno.serve(
 const signals: Partial<Record<Deno.Signal, boolean>> = {
   SIGINT: true, //
   SIGTERM: true, //
-  SIGTTIN: true, //
 };
 
 for (const [_signal, shouldExit] of Object.entries(signals)) {
