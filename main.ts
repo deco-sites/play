@@ -93,7 +93,6 @@ const signals: Partial<Record<Deno.Signal, boolean>> = {
   SIGBUS: false,
   SIGCHLD: false,
   SIGCONT: false,
-  SIGEMT: false,
   SIGHUP: false,
   SIGINFO: false,
   SIGINT: true, //
